@@ -1,0 +1,7 @@
+/* src/pages/Signup.css */
+.signup-container {
+  background: linear-gradient(to right, #ff416c, #ff4b2b);
+}
+.card {
+  border-radius: 12px;
+}
