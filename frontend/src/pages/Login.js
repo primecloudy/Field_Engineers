@@ -1,56 +1,76 @@
-// src/pages/Login.js
 import React, { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
-import "bootstrap/dist/css/bootstrap.min.css";
-import "./Login.css";
 
-function Login() {
-  const { login } = useContext(AuthContext);
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+const Login = () => {
+  const [credentials, setCredentials] = useState({ username: "", password: "" });
   const navigate = useNavigate();
+  const { setUser } = useContext(AuthContext); // ✅ add this
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    const role = login(username, password);
 
-    if (role === "admin") {
-      navigate("/dashboard");
-    } else if (role === "user") {
-      navigate("/attendance");
-    } else {
-      alert("Invalid credentials. Please contact admin to create user.");
+    if (!credentials.username || !credentials.password) {
+      alert("⚠️ Please enter username and password");
+      return;
+    }
+
+    try {
+      const response = await fetch("http://localhost:5000/api/users");
+      const users = await response.json();
+
+      const user = users.find(
+        (u) =>
+          u.username === credentials.username &&
+          u.password === credentials.password
+      );
+
+      if (user) {
+        setUser(user); // ✅ update context
+        alert(`✅ Welcome, ${user.username}!`);
+
+        if (user.role === "admin") {
+          navigate("/dashboard"); // admin page
+        } else {
+          navigate("/attendance"); // normal user page
+        }
+      } else {
+        alert("❌ Invalid username or password");
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      alert("⚠️ Failed to connect to server");
     }
   };
 
   return (
-    <div className="login-wrapper">
-  <div className="glass-card">
-    <h3 className="glass-title">Login</h3>
-    <form onSubmit={handleLogin}>
-      <input
-        type="text"
-        className="glass-input"
-        placeholder="Username"
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
-        required
-      />
-      <input
-        type="password"
-        className="glass-input"
-        placeholder="Password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        required
-      />
-      <button type="submit" className="glass-btn">Login</button>
-    </form>
-  </div>
-</div>
-
+    <div className="container mt-5">
+      <h2 className="text-center">Login</h2>
+      <form onSubmit={handleLogin} className="card p-4 shadow-lg mt-3">
+        <input
+          type="text"
+          className="form-control mb-3"
+          placeholder="Username"
+          value={credentials.username}
+          onChange={(e) =>
+            setCredentials({ ...credentials, username: e.target.value })
+          }
+        />
+        <input
+          type="password"
+          className="form-control mb-3"
+          placeholder="Password"
+          value={credentials.password}
+          onChange={(e) =>
+            setCredentials({ ...credentials, password: e.target.value })
+          }
+        />
+        <button type="submit" className="btn btn-primary">
+          Login
+        </button>
+      </form>
+    </div>
   );
-}
+};
 
 export default Login;

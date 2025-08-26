@@ -6,7 +6,13 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [attendanceDone, setAttendanceDone] = useState(false);
   const [attendanceRecords, setAttendanceRecords] = useState([]);
-  const [logoutPending, setLogoutPending] = useState(false);
+
+ const fetchUsers = async () => {
+  const response = await fetch("http://localhost:5000/api/users");
+  const data = await response.json();
+  console.log("📂 Users:", data);
+};
+
 
   useEffect(() => {
     let users = JSON.parse(localStorage.getItem("users")) || [];
@@ -30,7 +36,7 @@ export const AuthProvider = ({ children }) => {
     setAttendanceRecords(savedRecords);
   }, []);
 
-  // ✅ Login
+  // ✅ Login function (no navigate here!)
   const login = (username, password) => {
     const users = JSON.parse(localStorage.getItem("users")) || [];
     const foundUser = users.find(
@@ -42,14 +48,13 @@ export const AuthProvider = ({ children }) => {
     setUser(foundUser);
     localStorage.setItem("loggedInUser", JSON.stringify(foundUser));
     setAttendanceDone(false); // reset attendance when login
-    return foundUser.role;
+    return foundUser.role; // return role to Login.js
   };
 
-  // ✅ Logout → prepare for attendance
+  // ✅ Logout
   const logout = () => {
     setAttendanceDone(false);
     localStorage.removeItem("attendanceDone");
-    // ⚠️ Keep user until logout attendance is marked
   };
 
   // ✅ Mark attendance
@@ -68,7 +73,6 @@ export const AuthProvider = ({ children }) => {
       setAttendanceDone(true);
       localStorage.setItem("attendanceDone", "true");
     } else if (type === "logout") {
-      // clear user completely on logout attendance
       setUser(null);
       localStorage.removeItem("loggedInUser");
       localStorage.removeItem("attendanceDone");
@@ -86,7 +90,7 @@ export const AuthProvider = ({ children }) => {
     return true;
   };
 
-  // ✅ Admin delete user (but never admin)
+  // ✅ Admin delete user
   const deleteUser = (username) => {
     if (username === "admin") return; // prevent admin delete
 
@@ -94,7 +98,6 @@ export const AuthProvider = ({ children }) => {
     users = users.filter((u) => u.username !== username);
     localStorage.setItem("users", JSON.stringify(users));
 
-    // If deleted user is currently logged in → logout
     if (user && user.username === username) {
       logout();
       setUser(null);

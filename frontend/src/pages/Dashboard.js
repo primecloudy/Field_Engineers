@@ -4,53 +4,73 @@ import { AuthContext } from "../context/AuthContext";
 import "./Dashboard.css";
 
 const Dashboard = () => {
-  const { createUser, deleteUser } = useContext(AuthContext);
+  const { deleteUser } = useContext(AuthContext);
   const [users, setUsers] = useState([]);
   const [newUser, setNewUser] = useState({ username: "", password: "" });
 
-  // Load users from localStorage on mount
+  // ✅ Load users from server
   useEffect(() => {
-    const savedUsers = JSON.parse(localStorage.getItem("users")) || [];
-    setUsers(savedUsers);
+    fetch("http://localhost:5000/api/users")
+      .then((res) => res.json())
+      .then((data) => setUsers(data))
+      .catch((err) => console.error("Error fetching users:", err));
   }, []);
 
   // ✅ Create new user
-  const handleCreate = (e) => {
+  const handleCreate = async (e) => {
     e.preventDefault();
     if (!newUser.username || !newUser.password) {
       alert("Please fill all fields");
       return;
     }
 
-    const success = createUser(newUser.username, newUser.password);
-    if (success) {
-      const updated = JSON.parse(localStorage.getItem("users")) || [];
-      setUsers(updated);
-      setNewUser({ username: "", password: "" });
-      alert("✅ User created successfully!");
-    } else {
-      alert("❌ Username already exists!");
+    try {
+      const response = await fetch("http://localhost:5000/api/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newUser),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setUsers([...users, data]); // add new user to table
+        setNewUser({ username: "", password: "" }); // clear form
+        alert("✅ User created successfully!");
+      } else {
+        alert(`❌ Error: ${data.error}`);
+      }
+    } catch (error) {
+      console.error("Create error:", error);
+      alert("⚠️ Failed to create user. Check backend server.");
     }
   };
 
-  // ✅ Delete user (permanent from localStorage)
-  const handleDelete = (username) => {
+  // ✅ Delete user from backend
+  const handleDelete = async (username) => {
     if (username === "admin") {
       alert("❌ Cannot delete admin account!");
       return;
     }
 
-    // remove from localStorage
-    const updated = users.filter((u) => u.username !== username);
-    localStorage.setItem("users", JSON.stringify(updated));
+    try {
+      const response = await fetch(`http://localhost:5000/api/users/${username}`, {
+        method: "DELETE",
+      });
 
-    // update context too
-    deleteUser(username);
+      const data = await response.json();
 
-    // update state
-    setUsers(updated);
-
-    alert(`🗑️ User "${username}" deleted permanently!`);
+      if (response.ok) {
+        setUsers(users.filter((u) => u.username !== username));
+        deleteUser(username); // remove from context too
+        alert(`🗑️ ${data.message}`);
+      } else {
+        alert(`❌ Error: ${data.error}`);
+      }
+    } catch (error) {
+      console.error("Delete error:", error);
+      alert("⚠️ Failed to delete user. Check backend server.");
+    }
   };
 
   return (
@@ -98,34 +118,32 @@ const Dashboard = () => {
             </tr>
           </thead>
           <tbody>
-  {users
-    .filter((u) => u.username !== "admin") // ✅ hide admin account
-    .map((u, index) => (
-      <tr key={index}>
-        <td>{u.username}</td>
-        <td>{u.password}</td>
-        <td>{u.role}</td>
-        <td>
-          <button
-            className="btn btn-danger btn-sm"
-            onClick={() => handleDelete(u.username)}
-          >
-            Delete
-          </button>
-        </td>
-      </tr>
-    ))}
+            {users
+              .filter((u) => u.username !== "admin")
+              .map((u, index) => (
+                <tr key={index}>
+                  <td>{u.username}</td>
+                  <td>{u.password}</td>
+                  <td>{u.role}</td>
+                  <td>
+                    <button
+                      className="btn btn-danger btn-sm"
+                      onClick={() => handleDelete(u.username)}
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
 
-  {/* If only admin exists → show "No users" */}
-  {users.filter((u) => u.username !== "admin").length === 0 && (
-    <tr>
-      <td colSpan="4" className="text-center">
-        No users found.
-      </td>
-    </tr>
-  )}
-</tbody>
-
+            {users.filter((u) => u.username !== "admin").length === 0 && (
+              <tr>
+                <td colSpan="4" className="text-center">
+                  No users found.
+                </td>
+              </tr>
+            )}
+          </tbody>
         </table>
       </div>
     </div>
