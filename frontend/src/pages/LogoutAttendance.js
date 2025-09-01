@@ -140,7 +140,7 @@ const LogoutAttendance = () => {
 
           {/* Submit */}
           <button type="submit" disabled={submitting}>
-            {submitting ? "Submitting..." : "🚪 Submit & Logout"}
+            {submitting ? "Submitting..." : " Submit & Logout"}
           </button>
         </form>
       </div>

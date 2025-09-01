@@ -1,55 +1,94 @@
 // src/pages/Switch.js
-import React, { useState } from "react";
+import React, { useState, useContext, useEffect } from "react";
+import * as XLSX from "xlsx";
 import "./Switch.css";
+import { AuthContext } from "../context/AuthContext";
+import Select from "react-select";
+
 
 function SwitchPage() {
+  const { user } = useContext(AuthContext);
+  const [filteredFleets, setFilteredFleets] = useState([]);
+  const [fleetData, setFleetData] = useState([]);
   const [formData, setFormData] = useState({
-    engineerName: "",
-    depo: "",
-    fleetNumber: "",
-    serviceType: "",
-    vehicleStatus: "",
-    reportStatus: "",
-    objective: "",
-    preventiveFile: null,
-    odometer: "",
-    partFailure: "",
-    partFailureImage: null,
-    problemDescription: "",
-    actionTaken: "",
-    requiredSpares: "",
-    remarks: "",
-    esimId: "",
-    imeiNumber: "",
-    diagnosticsFile: null,
-    deviceInfoFile: null,
-    updatesFile: null,
-    preventiveSection: {},
+   engineerName: user?.username || "",
+  depo: "",
+  fleetNumber: "",
+  serviceType: "",
+  vehicleStatus: "",
+  reportStatus: "",
+  objective: "",
+  preventiveFile: null,
+  odometer: "",
+  partFailure: [],   // ✅ must be an array
+  partFailureImage: null,
+  problemDescription: "",
+  actionTaken: "",
+  requiredSpares: "",
+  remarks: "",
+  esimId: "",
+  diagnosticsFile: null,
+  deviceInfoFile: null,
+  updatesFile: null,
+  preventiveSection: {},
+  imeiNumber: "",
   });
+  const [suggestions, setSuggestions] = useState([]);
+  const [submitting, setSubmitting] = useState(false);
+
 
   const partFailureOptions = [
-    "NONE",
-    "MNVR",
-    "BDC",
-    "POE",
-    "FDU",
-    "SDU",
-    "RDU",
-    "IDU",
-    "R-CAM",
-    "SSD",
-    "MIC",
-    "WIRING HARNESS",
-    "ANTENNA",
-    "SPEAKER",
-    "S-CAM",
-    "APC",
-    "FRONT LED",
-    "REAR LED",
-    "INBUS LED",
-    "SIDE LED",
-    "PIGTAILS",
+    { value: "NONE", label: "NONE" },
+    { value: "MNVR", label: "MNVR" },
+    { value: "BDC", label: "BDC" },
+    { value: "POE", label: "POE" },
+    { value: "FDU", label: "FDU" },
+    { value: "SDU", label: "SDU" },
+    { value: "RDU", label: "RDU" },
+    { value: "IDU", label: "IDU" },
+    { value: "R-CAM", label: "R-CAM" },
+    { value: "SSD", label: "SSD" },
+    { value: "MIC", label: "MIC" },
+    { value: "WIRING HARNESS", label: "WIRING HARNESS" },
+    { value: "ANTENNA", label: "ANTENNA" },
+    { value: "SPEAKER", label: "SPEAKER" },
+    { value: "S-CAM", label: "S-CAM" },
+    { value: "APC", label: "APC" },
+    { value: "FRONT LED", label: "FRONT LED" },
+    { value: "REAR LED", label: "REAR LED" },
+    { value: "INBUS LED", label: "INBUS LED" },
+    { value: "SIDE LED", label: "SIDE LED" },
+    { value: "PIGTAILS", label: "PIGTAILS" },
   ];
+
+
+  // ✅ Load Excel file when component mounts
+  useEffect(() => {
+    fetch("/MASTER_DATA_ADAIKAL.xlsx")
+      .then((res) => res.arrayBuffer())
+      .then((data) => {
+        const workbook = XLSX.read(data, { type: "array" });
+        console.log("Sheets in File:", workbook.SheetNames);
+
+        const sheet = workbook.Sheets["SWITCH_MASTER"];
+        if (sheet) {
+          const jsonData = XLSX.utils.sheet_to_json(sheet);
+          console.log("✅ Excel Rows:", jsonData); // 👈 Check column names here
+          setFleetData(jsonData);
+        }
+      })
+      .catch((err) => console.error("❌ Excel Load Error:", err));
+  }, []);
+
+
+
+
+
+  useEffect(() => {
+    if (user?.username) {
+      setFormData((prev) => ({ ...prev, engineerName: user.username }));
+    }
+  }, [user]);
 
   const handleChange = (e) => {
     const { name, value, type, files } = e.target;
@@ -67,11 +106,145 @@ function SwitchPage() {
     });
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log("Form Submitted:", formData);
-    alert("Form submitted successfully!");
+  // ✅ Handle typing Fleet Number
+  const handleFleetNumberChange = (e) => {
+    const value = e.target.value;
+    setFormData((prev) => ({ ...prev, fleetNumber: value }));
+
+    if (value.length > 0) {
+      const filtered = fleetData.filter((fleet) =>
+        String(fleet["Fleet Number"] || "")
+          .toLowerCase()
+          .includes(value.toLowerCase())
+      );
+      setFilteredFleets(filtered);
+    } else {
+      setFilteredFleets([]);
+    }
   };
+
+  // ✅ Handle selecting a Fleet from dropdown
+  const handleSelectFleet = (fleet) => {
+    setFormData((prev) => ({
+      ...prev,
+      fleetNumber: fleet["Fleet Number"],
+      depo: fleet["Depot"],
+      imeiNumber: fleet["Device ID"] || fleet["IMEI"] || "", // ✅ support both headers
+    }));
+    setFilteredFleets([]);
+  };
+
+  // ✅ Mark all preventive components as OKAY or NOT_OKAY
+  const handleMarkAll = (status) => {
+    const components = [
+      "R-CAM", "FDU", "SDU", "RDU", "IDU", "MIC", "GPS", "GSM", "CAN",
+      "M-ANN", "BDC COLOR", "BDC TOUCH", "USB", "PLAYBACK",
+      "R-CAM CONNECTOR", "LED PCB"
+    ];
+
+    const updatedSection = {};
+    components.forEach((item) => {
+      updatedSection[item] = status;
+    });
+
+    setFormData((prev) => ({
+      ...prev,
+      preventiveSection: updatedSection,
+    }));
+  };
+
+
+  // ✅ Handle form submit
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setSubmitting(true);
+
+  // Helper: Convert file to Base64
+  const toBase64 = (file) =>
+    new Promise((resolve, reject) => {
+      if (!file) return resolve(null);
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        const base64 = reader.result.split(",")[1]; // remove prefix
+        resolve({ data: base64, mimeType: file.type, name: file.name });
+      };
+      reader.onerror = (error) => reject(error);
+    });
+
+  try {
+    // Convert all files
+    const preventiveFile = await toBase64(formData.preventiveFile);
+    const partFailureImage = await toBase64(formData.partFailureImage);
+    const diagnosticsFile = await toBase64(formData.diagnosticsFile);
+    const deviceInfoFile = await toBase64(formData.deviceInfoFile);
+    const updatesFile = await toBase64(formData.updatesFile);
+
+    // Prepare payload
+    const payload = {
+      ...formData,
+      preventiveFile,
+      partFailureImage,
+      diagnosticsFile,
+      deviceInfoFile,
+      updatesFile,
+      // Ensure partFailure is an array even if empty
+      partFailure: formData.partFailure || [],
+      // Preventive section as object
+      preventiveSection: formData.preventiveSection || {}
+    };
+
+    // Send to Google Apps Script
+    const response = await fetch(
+      "https://script.google.com/macros/s/AKfycbxBM-XOLrZKpKMIThNDVQ6N7iSnIaOLh_l3jpRTJkxHDnsapqMfwLoFeLPIoUyQCGtl4w/exec",
+      {
+        method: "POST",
+        body: JSON.stringify(payload),
+      }   
+    );
+
+    if (!response.ok) throw new Error("Failed to submit form");
+
+    const result = await response.json();
+    console.log("✅ Form submitted:", result);
+    alert("Form submitted successfully!");
+
+    // Reset form
+    setFormData({
+      engineerName: user?.username || "",
+      depo: "",
+      fleetNumber: "",
+      serviceType: "",
+      vehicleStatus: "",
+      reportStatus: "",
+      objective: "",
+      preventiveFile: null,
+      odometer: "",
+      partFailure: [],
+      partFailureImage: null,
+      problemDescription: "",
+      actionTaken: "",
+      requiredSpares: "",
+      remarks: "",
+      esimId: "",
+      diagnosticsFile: null,
+      deviceInfoFile: null,
+      updatesFile: null,
+      preventiveSection: {},
+      imeiNumber: "",
+    });
+
+  } catch (error) {
+    console.error("❌ Error submitting form:", error);
+    alert("Error: " + error.message);
+  } finally {
+    setSubmitting(false);
+  }
+};
+
+
+
+
 
   return (
     <div className="switch container mt-5">
@@ -89,27 +262,45 @@ function SwitchPage() {
           />
         </div>
 
-        {/* Depo */}
-        <div className="form-group">
-          <label>Depo:</label>
-          <select name="depo" value={formData.depo} onChange={handleChange} required>
-            <option value="">Select</option>
-            <option value="Vysarpadi">Vysarpadi</option>
-            <option value="Perumbakam">Perumbakam</option>
-          </select>
-        </div>
+
+
 
         {/* Fleet Number */}
-        <div className="form-group">
-          <label>Fleet Number:</label>
-          <input
-            type="text"
-            name="fleetNumber"
-            value={formData.fleetNumber}
-            onChange={handleChange}
-            required
-          />
-        </div>
+        <label>Fleet Number:</label>
+        <input
+          type="text"
+          value={formData.fleetNumber}
+          onChange={handleFleetNumberChange}
+          placeholder="Type Fleet Number"
+        />
+
+        {/* Dropdown */}
+        {filteredFleets.length > 0 && (
+          <ul className="dropdown">
+            {filteredFleets.map((fleet, index) => (
+              <li key={index} onClick={() => handleSelectFleet(fleet)}>
+                {fleet["Fleet Number"]}
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {/* Depot */}
+        <label>Depot:</label>
+        <input type="text" value={formData.depo} readOnly />
+
+        {/* IMEI Number (editable) */}
+        <label>IMEI Number:</label>
+        <input
+          type="text"
+          value={formData.imeiNumber}
+          onChange={(e) =>
+            setFormData((prev) => ({ ...prev, imeiNumber: e.target.value }))
+          }
+        />
+
+
+
 
         {/* Service Type */}
         <div className="form-group">
@@ -132,6 +323,17 @@ function SwitchPage() {
           <>
             <div className="form-group preventive-section">
               <h4 className="section-title">Preventive Section</h4>
+
+              {/* ✅ Buttons */}
+              <div className="button-group mb-2">
+                <button type="button" onClick={() => handleMarkAll("OKAY")} className="btn btn-success btn-sm me-2">
+                  All OK
+                </button>
+                <button type="button" onClick={() => handleMarkAll("NOT_OKAY")} className="btn btn-danger btn-sm">
+                  All Not OK
+                </button>
+              </div>
+
               <table className="preventive-table">
                 <thead>
                   <tr>
@@ -154,9 +356,7 @@ function SwitchPage() {
                           name={item}
                           value="OKAY"
                           checked={formData.preventiveSection[item] === "OKAY"}
-                          onChange={(e) =>
-                            handlePreventiveSection(item, e.target.value)
-                          }
+                          onChange={(e) => handlePreventiveSection(item, e.target.value)}
                           required
                         />
                       </td>
@@ -166,9 +366,7 @@ function SwitchPage() {
                           name={item}
                           value="NOT_OKAY"
                           checked={formData.preventiveSection[item] === "NOT_OKAY"}
-                          onChange={(e) =>
-                            handlePreventiveSection(item, e.target.value)
-                          }
+                          onChange={(e) => handlePreventiveSection(item, e.target.value)}
                           required
                         />
                       </td>
@@ -178,6 +376,7 @@ function SwitchPage() {
               </table>
               <p className="note">This question requires one response per row</p>
             </div>
+
 
             {/* Preventive File */}
             <div className="form-group">
@@ -209,70 +408,75 @@ function SwitchPage() {
             {/* Mandatory fields when Open/Close */}
             {(formData.vehicleStatus === "Open" ||
               formData.vehicleStatus === "Close") && (
-              <>
-                <div className="form-group">
-                  <label>Odometer:</label>
-                  <input
-                    type="text"
-                    name="odometer"
-                    value={formData.odometer}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-                <div className="form-group">
-                  <label>Part Failure:</label>
-                  <select
-                    name="partFailure"
-                    value={formData.partFailure}
-                    onChange={handleChange}
-                    required
-                  >
-                    <option value="">Select</option>
-                    {partFailureOptions.map((option) => (
-                      <option key={option} value={option}>{option}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="form-group">
-                  <label>Part Failure Image:</label>
-                  <input
-                    type="file"
-                    name="partFailureImage"
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-                <div className="form-group">
-                  <label>Problem Description:</label>
-                  <textarea
-                    name="problemDescription"
-                    value={formData.problemDescription}
-                    onChange={handleChange}
-                    required
-                  ></textarea>
-                </div>
-                <div className="form-group">
-                  <label>Action Taken:</label>
-                  <textarea
-                    name="actionTaken"
-                    value={formData.actionTaken}
-                    onChange={handleChange}
-                    required
-                  ></textarea>
-                </div>
-                <div className="form-group">
-                  <label>Required Spares:</label>
-                  <input
-                    type="text"
-                    name="requiredSpares"
-                    value={formData.requiredSpares}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-              </>
-            )}
+                <>
+                  <div className="form-group">
+                    <label>Odometer:</label>
+                    <input
+                      type="text"
+                      name="odometer"
+                      value={formData.odometer}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Part Failure:</label>
+                    <Select
+                      isMulti
+                      name="partFailure"
+                      options={partFailureOptions}
+                      value={partFailureOptions.filter((opt) =>
+                        (formData.partFailure || []).includes(opt.value)
+                      )}
+                      onChange={(selected) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          partFailure: selected ? selected.map((s) => s.value) : [],
+                        }))
+                      }
+                      placeholder="Select failed parts"
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Part Failure Image:</label>
+                    <input
+                      type="file"
+                      name="partFailureImage"
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Problem Description:</label>
+                    <textarea
+                      name="problemDescription"
+                      value={formData.problemDescription}
+                      onChange={handleChange}
+                      required
+                    ></textarea>
+                  </div>
+                  <div className="form-group">
+                    <label>Action Taken:</label>
+                    <textarea
+                      name="actionTaken"
+                      value={formData.actionTaken}
+                      onChange={handleChange}
+                      required
+                    ></textarea>
+                  </div>
+                  <div className="form-group">
+                    <label>Required Spares:</label>
+                    <input
+                      type="text"
+                      name="requiredSpares"
+                      value={formData.requiredSpares}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+                </>
+              )}
 
             {/* Remarks & Device Info */}
             {(formData.vehicleStatus === "None" || formData.vehicleStatus) && (
@@ -296,16 +500,7 @@ function SwitchPage() {
                     required
                   />
                 </div>
-                <div className="form-group">
-                  <label>IMEI Number:</label>
-                  <input
-                    type="text"
-                    name="imeiNumber"
-                    value={formData.imeiNumber}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
+
                 <div className="form-group">
                   <label>System Diagnostics:</label>
                   <input
@@ -349,70 +544,75 @@ function SwitchPage() {
 
             {(formData.reportStatus === "Open" ||
               formData.reportStatus === "Close") && (
-              <>
-                <div className="form-group">
-                  <label>Odometer:</label>
-                  <input
-                    type="text"
-                    name="odometer"
-                    value={formData.odometer}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-                <div className="form-group">
-                  <label>Part Failure:</label>
-                  <select
-                    name="partFailure"
-                    value={formData.partFailure}
-                    onChange={handleChange}
-                    required
-                  >
-                    <option value="">Select</option>
-                    {partFailureOptions.map((option) => (
-                      <option key={option} value={option}>{option}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="form-group">
-                  <label>Part Failure Image:</label>
-                  <input
-                    type="file"
-                    name="partFailureImage"
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-                <div className="form-group">
-                  <label>Problem Description:</label>
-                  <textarea
-                    name="problemDescription"
-                    value={formData.problemDescription}
-                    onChange={handleChange}
-                    required
-                  ></textarea>
-                </div>
-                <div className="form-group">
-                  <label>Action Taken:</label>
-                  <textarea
-                    name="actionTaken"
-                    value={formData.actionTaken}
-                    onChange={handleChange}
-                    required
-                  ></textarea>
-                </div>
-                <div className="form-group">
-                  <label>Required Spares:</label>
-                  <input
-                    type="text"
-                    name="requiredSpares"
-                    value={formData.requiredSpares}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-              </>
-            )}
+                <>
+                  <div className="form-group">
+                    <label>Odometer:</label>
+                    <input
+                      type="text"
+                      name="odometer"
+                      value={formData.odometer}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Part Failure:</label>
+                    <Select
+                      isMulti
+                      name="partFailure"
+                      options={partFailureOptions}
+                      value={partFailureOptions.filter((opt) =>
+                        (formData.partFailure || []).includes(opt.value)
+                      )}
+                      onChange={(selected) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          partFailure: selected ? selected.map((s) => s.value) : [],
+                        }))
+                      }
+                      placeholder="Select failed parts"
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Part Failure Image:</label>
+                    <input
+                      type="file"
+                      name="partFailureImage"
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Problem Description:</label>
+                    <textarea
+                      name="problemDescription"
+                      value={formData.problemDescription}
+                      onChange={handleChange}
+                      required
+                    ></textarea>
+                  </div>
+                  <div className="form-group">
+                    <label>Action Taken:</label>
+                    <textarea
+                      name="actionTaken"
+                      value={formData.actionTaken}
+                      onChange={handleChange}
+                      required
+                    ></textarea>
+                  </div>
+                  <div className="form-group">
+                    <label>Required Spares:</label>
+                    <input
+                      type="text"
+                      name="requiredSpares"
+                      value={formData.requiredSpares}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+                </>
+              )}
 
             {(formData.reportStatus === "None" || formData.reportStatus) && (
               <>
@@ -435,16 +635,7 @@ function SwitchPage() {
                     required
                   />
                 </div>
-                <div className="form-group">
-                  <label>IMEI Number:</label>
-                  <input
-                    type="text"
-                    name="imeiNumber"
-                    value={formData.imeiNumber}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
+
                 <div className="form-group">
                   <label>System Diagnostics:</label>
                   <input
@@ -517,70 +708,75 @@ function SwitchPage() {
 
             {(formData.vehicleStatus === "Open" ||
               formData.vehicleStatus === "Close") && (
-              <>
-                <div className="form-group">
-                  <label>Odometer:</label>
-                  <input
-                    type="text"
-                    name="odometer"
-                    value={formData.odometer}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-                <div className="form-group">
-                  <label>Part Failure:</label>
-                  <select
-                    name="partFailure"
-                    value={formData.partFailure}
-                    onChange={handleChange}
-                    required
-                  >
-                    <option value="">Select</option>
-                    {partFailureOptions.map((option) => (
-                      <option key={option} value={option}>{option}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="form-group">
-                  <label>Part Failure Image:</label>
-                  <input
-                    type="file"
-                    name="partFailureImage"
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-                <div className="form-group">
-                  <label>Problem Description:</label>
-                  <textarea
-                    name="problemDescription"
-                    value={formData.problemDescription}
-                    onChange={handleChange}
-                    required
-                  ></textarea>
-                </div>
-                <div className="form-group">
-                  <label>Action Taken:</label>
-                  <textarea
-                    name="actionTaken"
-                    value={formData.actionTaken}
-                    onChange={handleChange}
-                    required
-                  ></textarea>
-                </div>
-                <div className="form-group">
-                  <label>Required Spares:</label>
-                  <input
-                    type="text"
-                    name="requiredSpares"
-                    value={formData.requiredSpares}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-              </>
-            )}
+                <>
+                  <div className="form-group">
+                    <label>Odometer:</label>
+                    <input
+                      type="text"
+                      name="odometer"
+                      value={formData.odometer}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Part Failure:</label>
+                    <Select
+                      isMulti
+                      name="partFailure"
+                      options={partFailureOptions}
+                      value={partFailureOptions.filter((opt) =>
+                        (formData.partFailure || []).includes(opt.value)
+                      )}
+                      onChange={(selected) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          partFailure: selected ? selected.map((s) => s.value) : [],
+                        }))
+                      }
+                      placeholder="Select failed parts"
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Part Failure Image:</label>
+                    <input
+                      type="file"
+                      name="partFailureImage"
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Problem Description:</label>
+                    <textarea
+                      name="problemDescription"
+                      value={formData.problemDescription}
+                      onChange={handleChange}
+                      required
+                    ></textarea>
+                  </div>
+                  <div className="form-group">
+                    <label>Action Taken:</label>
+                    <textarea
+                      name="actionTaken"
+                      value={formData.actionTaken}
+                      onChange={handleChange}
+                      required
+                    ></textarea>
+                  </div>
+                  <div className="form-group">
+                    <label>Required Spares:</label>
+                    <input
+                      type="text"
+                      name="requiredSpares"
+                      value={formData.requiredSpares}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+                </>
+              )}
 
             {(formData.vehicleStatus === "None" || formData.vehicleStatus) && (
               <>
@@ -603,16 +799,7 @@ function SwitchPage() {
                     required
                   />
                 </div>
-                <div className="form-group">
-                  <label>IMEI Number:</label>
-                  <input
-                    type="text"
-                    name="imeiNumber"
-                    value={formData.imeiNumber}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
+
                 <div className="form-group">
                   <label>System Diagnostics:</label>
                   <input
@@ -637,9 +824,10 @@ function SwitchPage() {
         )}
 
         {/* Submit */}
-        <button type="submit" className="btn btn-primary mt-3">
-          Submit
-        </button>
+        <button type="submit" disabled={submitting}>
+  {submitting ? "Saving..." : "Submit"}
+</button>
+
       </form>
     </div>
   );

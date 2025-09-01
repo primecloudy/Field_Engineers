@@ -40,16 +40,16 @@ function Home() {
         {/* <Link to="/lowflower" className="card lowflower-card">
           <h3>Lowflower</h3>
           <p>Access Lowflower Form</p>
-        </Link>
+        </Link> */}
         <Link to="/switch" className="card switch-card">
           <h3>Switch</h3>
           <p>Access Switch Form</p>
-        </Link> */}
+        </Link>
       </div>
 
       {/* Logout */}
       <button onClick={handleLogout} className="logout-btn">
-        🚪 Logout
+        Logout
       </button>
     </div>
   );
