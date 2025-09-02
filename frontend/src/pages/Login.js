@@ -7,41 +7,44 @@ const Login = () => {
   const navigate = useNavigate();
   const { setUser } = useContext(AuthContext); // ✅ add this
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
+const handleLogin = async (e) => {
+  e.preventDefault();
 
-    if (!credentials.username || !credentials.password) {
-      alert("⚠️ Please enter username and password");
-      return;
-    }
+  const { username, password } = credentials;
 
-    try {
-      const response = await fetch("http://localhost:5000/api/users");
-      const users = await response.json();
+  if (!username || !password) {
+    alert("⚠️ Please enter username and password");
+    return;
+  }
 
-      const user = users.find(
-        (u) =>
-          u.username === credentials.username &&
-          u.password === credentials.password
-      );
+  try {
+    const response = await fetch("http://localhost:5000/api/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password }),
+    });
 
-      if (user) {
-        setUser(user); // ✅ update context
-        alert(`✅ Welcome, ${user.username}!`);
+    const data = await response.json();
 
-        if (user.role === "admin") {
-          navigate("/dashboard"); // admin page
-        } else {
-          navigate("/attendance"); // normal user page
-        }
+    if (response.ok && data.success) {
+      setUser(data.user); // ✅ set user in context
+      alert(`✅ Welcome, ${data.user.username}!`);
+
+      if (data.user.role === "admin") {
+        navigate("/dashboard");
       } else {
-        alert("❌ Invalid username or password");
+        navigate("/attendance");
       }
-    } catch (error) {
-      console.error("Login error:", error);
-      alert("⚠️ Failed to connect to server");
+    } else {
+      alert(data.error || "❌ Invalid username or password");
     }
-  };
+  } catch (error) {
+    console.error("Login error:", error);
+    alert("⚠️ Failed to connect to server");
+  }
+};
+
+
 
   return (
     <div className="container mt-5">

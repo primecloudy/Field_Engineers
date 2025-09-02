@@ -3,7 +3,6 @@ import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-d
 import { AuthProvider, AuthContext } from "./context/AuthContext";
 
 import Login from "./pages/Login";
-import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
 import Attendance from "./pages/Attendance";
 import Home from "./pages/Home";
@@ -40,7 +39,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Navigate to="/login" />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
+
 
           {/* Admin Dashboard */}
           <Route

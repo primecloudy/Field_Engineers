@@ -1,71 +1,91 @@
 const express = require("express");
-const cors = require("cors");
-const bodyParser = require("body-parser");
 const fs = require("fs");
-
+const cors = require("cors");
 const app = express();
 const PORT = 5000;
 
 app.use(cors());
-app.use(bodyParser.json());
+app.use(express.json());
 
 const USERS_FILE = "./users.json";
 
-// ✅ Helper to load users
-function loadUsers() {
-  if (!fs.existsSync(USERS_FILE)) {
-    fs.writeFileSync(USERS_FILE, JSON.stringify([{ username: "admin", password: "admin123", role: "admin" }], null, 2));
-  }
-  return JSON.parse(fs.readFileSync(USERS_FILE));
-}
-
-// ✅ Helper to save users
-function saveUsers(users) {
-  fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
-}
-
-// ✅ GET all users
-app.get("/api/users", (req, res) => {
-  const users = loadUsers();
-  res.json(users);
-});
-
-// ✅ POST create new user
-app.post("/api/users", (req, res) => {
+// 🔹 Login
+app.post("/api/login", (req, res) => {
   const { username, password } = req.body;
 
-  if (!username || !password) {
-    return res.status(400).json({ error: "Username & password required" });
-  }
+  fs.readFile(USERS_FILE, "utf8", (err, data) => {
+    if (err) return res.status(500).json({ error: "Failed to read users" });
 
-  const users = loadUsers();
-  if (users.find((u) => u.username === username)) {
-    return res.status(400).json({ error: "User already exists" });
-  }
+    const users = JSON.parse(data || "[]");
+    const user = users.find(
+      (u) => u.username === username && u.password === password
+    );
 
-  const newUser = { username, password, role: "user" };
-  users.push(newUser);
-  saveUsers(users);
+    if (!user) {
+      return res
+        .status(400)
+        .json({ success: false, error: "Invalid username or password" });
+    }
 
-  res.status(201).json(newUser);
+    res.json({
+      success: true,
+      message: "Login successful",
+      user: { username, role: user.role },
+    });
+  });
 });
 
-// ✅ DELETE user
+// 🔹 Get all users (safe, no password in response)
+app.get("/api/users", (req, res) => {
+  fs.readFile(USERS_FILE, "utf8", (err, data) => {
+    if (err) return res.status(500).json({ error: "Failed to read users" });
+    const users = JSON.parse(data || "[]");
+
+    // only send username + role
+    const safeUsers = users.map(({ username, role }) => ({
+      username,
+      role,
+    }));
+
+    res.json(safeUsers);
+  });
+});
+
+// 🔹 Create user
+app.post("/api/users", (req, res) => {
+  const { username, password, role } = req.body;
+  fs.readFile(USERS_FILE, "utf8", (err, data) => {
+    if (err) return res.status(500).json({ error: "Failed to read users" });
+    let users = JSON.parse(data || "[]");
+
+    if (users.find((u) => u.username === username)) {
+      return res.status(400).json({ error: "User already exists" });
+    }
+
+    users.push({ username, password, role });
+    fs.writeFile(USERS_FILE, JSON.stringify(users, null, 2), (err) => {
+      if (err) return res.status(500).json({ error: "Failed to save user" });
+      res.json({ message: "User created successfully" });
+    });
+  });
+});
+
+// 🔹 Delete user
 app.delete("/api/users/:username", (req, res) => {
   const { username } = req.params;
-  let users = loadUsers();
+  fs.readFile(USERS_FILE, "utf8", (err, data) => {
+    if (err) return res.status(500).json({ error: "Failed to read users" });
+    let users = JSON.parse(data || "[]");
 
-  if (username === "admin") {
-    return res.status(400).json({ error: "Cannot delete admin account" });
-  }
+    users = users.filter((u) => u.username !== username);
 
-  users = users.filter((u) => u.username !== username);
-  saveUsers(users);
-
-  res.json({ success: true, message: `User ${username} deleted` });
+    fs.writeFile(USERS_FILE, JSON.stringify(users, null, 2), (err) => {
+      if (err) return res.status(500).json({ error: "Failed to delete user" });
+      res.json({ message: "User deleted successfully" });
+    });
+  });
 });
 
-// ✅ Start server
 app.listen(PORT, () => {
-  console.log(`🚀 Server running at http://localhost:${PORT}`);
+  console.log(`✅ Server running on http://localhost:${PORT}`);
 });
