@@ -1,35 +1,37 @@
+// src/pages/TNSTC.js
 import React, { useState, useContext, useEffect } from "react";
 import * as XLSX from "xlsx";
-import "./Switch.css";
+import "./TNSTC.css";
 import { AuthContext } from "../context/AuthContext";
 import Select from "react-select";
 
-function SwitchPage() {
+function TNSTC() {
   const { user } = useContext(AuthContext);
   const [filteredFleets, setFilteredFleets] = useState([]);
   const [fleetData, setFleetData] = useState([]);
   const [formData, setFormData] = useState({
     engineerName: user?.username || "",
-    depo: "",
+    field: "",
     fleetNumber: "",
+    depo: "",
+    imeiNumber: "",
+    odometer: "",
     serviceType: "",
-    vehicleStatus: "",
     reportStatus: "",
     objective: "",
-    preventiveFile: null,
-    odometer: "",
     partFailure: [],
-    partFailureImage: null,
+    spareReplaced: [],
+    sparesRequired: [],
     problemDescription: "",
     actionTaken: "",
-    requiredSpares: [],  // ✅ Changed from string to array
     remarks: "",
-    esimId: "",
-    diagnosticsFile: null,
-    deviceInfoFile: null,
+    preventiveFile: null,
+    complaintsFile: null,
     updatesFile: null,
+    partFailureImage: null,
+    referenceFile1: null,
+    referenceFile2: null,
     preventiveSection: {},
-    imeiNumber: "",
   });
   const [submitting, setSubmitting] = useState(false);
 
@@ -38,29 +40,37 @@ function SwitchPage() {
     { value: "MNVR", label: "MNVR" },
     { value: "BDC", label: "BDC" },
     { value: "POE", label: "POE" },
-    { value: "FDU", label: "FDU" },
-    { value: "SDU", label: "SDU" },
-    { value: "RDU", label: "RDU" },
     { value: "IDU", label: "IDU" },
+    { value: "FDU CONTROL CARD", label: "FDU CONTROL CARD" },
+    { value: "FDU SMALL CARD", label: "FDU SMALL CARD" },
+    { value: "FDU 1ST CARD", label: "FDU 1ST CARD" },
+    { value: "FDU 2ND CARD", label: "FDU 2ND CARD" },
+    { value: "SDU CONTROL CARD", label: "SDU CONTROL CARD" },
+    { value: "SDU 1ST CARD", label: "SDU 1ST CARD" },
+    { value: "SDU 2ND CARD", label: "SDU 2ND CARD" },
+    { value: "RDU CONTROL CARD", label: "RDU CONTROL CARD" },
+    { value: "RDU 1ST CARD", label: "RDU 1ST CARD" },
+    { value: "RDU 2ND CARD", label: "RDU 2ND CARD" },
+    { value: "S-CAM", label: "S-CAM" },
     { value: "R-CAM", label: "R-CAM" },
     { value: "SSD", label: "SSD" },
     { value: "MIC", label: "MIC" },
-    { value: "WIRING HARNESS", label: "WIRING HARNESS" },
-    { value: "ANTENNA", label: "ANTENNA" },
-    { value: "SPEAKER", label: "SPEAKER" },
-    { value: "S-CAM", label: "S-CAM" },
-    { value: "APC", label: "APC" },
-    { value: "FRONT LED", label: "FRONT LED" },
-    { value: "REAR LED", label: "REAR LED" },
-    { value: "INBUS LED", label: "INBUS LED" },
-    { value: "SIDE LED", label: "SIDE LED" },
-    { value: "PIGTAILS", label: "PIGTAILS" },
+    { value: "RJ45", label: "RJ45" },
+    { value: "FRC", label: "FRC" },
+    { value: "POWER PIC", label: "POWER PIC" },
   ];
 
-  // ✅ Use the same options for required spares
-  const requiredSparesOptions = partFailureOptions;
+  // Use the same options for Spare Replaced and Spares Required
+  const spareOptions = [...partFailureOptions];
 
-  // ✅ Load Excel file when component mounts
+  const objectiveOptions = [
+    { value: "LED_FW", label: "LED FW 1.3.0" },
+    { value: "MNVR_FW", label: "MNVR FW 2.1" },
+    { value: "FIRMWARE", label: "FIRMWARE 38" },
+    { value: "SOFTWARE_UPDATE", label: "SOFTWARE UPDATE" },
+  ];
+
+  // ✅ Load Excel file when component mounts - UPDATED TO READ FROM M_and_C SHEET
   useEffect(() => {
     fetch("/MASTER_DATA_ADAIKAL.xlsx")
       .then((res) => res.arrayBuffer())
@@ -68,11 +78,41 @@ function SwitchPage() {
         const workbook = XLSX.read(data, { type: "array" });
         console.log("Sheets in File:", workbook.SheetNames);
 
-        const sheet = workbook.Sheets["SWITCH_MASTER"];
+        // Read from M_and_C sheet instead of TNSTC_MASTER
+        const sheet = workbook.Sheets["M_and_C"];
         if (sheet) {
-          const jsonData = XLSX.utils.sheet_to_json(sheet);
+          const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
           console.log("✅ Excel Rows:", jsonData);
-          setFleetData(jsonData);
+          
+          // Extract headers and data
+          const headers = jsonData[0];
+          const rows = jsonData.slice(1);
+          
+          // Map to consistent column names
+          const formattedData = rows.map(row => {
+            const obj = {};
+            headers.forEach((header, index) => {
+              if (header) {
+                // Normalize header names for consistent access
+                const normalizedHeader = header.trim().toLowerCase();
+                if (normalizedHeader.includes('fleet')) {
+                  obj.fleetNumber = row[index] || '';
+                } else if (normalizedHeader.includes('depot') || normalizedHeader.includes('depo')) {
+                  obj.depot = row[index] || '';
+                } else if (normalizedHeader.includes('device') || normalizedHeader.includes('imei')) {
+                  obj.imei = row[index] || '';
+                } else {
+                  obj[header] = row[index] || '';
+                }
+              }
+            });
+            return obj;
+          });
+          
+          setFleetData(formattedData);
+          console.log("✅ Formatted Fleet Data:", formattedData);
+        } else {
+          console.error("❌ M_and_C sheet not found in Excel file");
         }
       })
       .catch((err) => console.error("❌ Excel Load Error:", err));
@@ -107,7 +147,7 @@ function SwitchPage() {
 
     if (value.length > 0) {
       const filtered = fleetData.filter((fleet) =>
-        String(fleet["Fleet Number"] || "")
+        String(fleet.fleetNumber || "")
           .toLowerCase()
           .includes(value.toLowerCase())
       );
@@ -117,13 +157,13 @@ function SwitchPage() {
     }
   };
 
-  // ✅ Handle selecting a Fleet from dropdown
+  // ✅ Handle selecting a Fleet from dropdown - UPDATED TO SET DEPOT
   const handleSelectFleet = (fleet) => {
     setFormData((prev) => ({
       ...prev,
-      fleetNumber: fleet["Fleet Number"],
-      depo: fleet["Depot"],
-      imeiNumber: fleet["Device ID"] || fleet["IMEI"] || "",
+      fleetNumber: fleet.fleetNumber || "",
+      depo: fleet.depot || "",
+      imeiNumber: fleet.imei || "",
     }));
     setFilteredFleets([]);
   };
@@ -132,8 +172,7 @@ function SwitchPage() {
   const handleMarkAll = (status) => {
     const components = [
       "R-CAM", "FDU", "SDU", "RDU", "IDU", "MIC", "GPS", "GSM", "CAN",
-      "M-ANN", "BDC COLOR", "BDC TOUCH", "USB", "PLAYBACK",
-      "R-CAM CONNECTOR", "LED PCB"
+      "M-ANN", "BDC COLOR", "BDC TOUCH"
     ];
 
     const updatedSection = {};
@@ -168,29 +207,33 @@ function SwitchPage() {
     try {
       // Convert all files
       const preventiveFile = await toBase64(formData.preventiveFile);
-      const partFailureImage = await toBase64(formData.partFailureImage);
-      const diagnosticsFile = await toBase64(formData.diagnosticsFile);
-      const deviceInfoFile = await toBase64(formData.deviceInfoFile);
+      const complaintsFile = await toBase64(formData.complaintsFile);
       const updatesFile = await toBase64(formData.updatesFile);
+      const partFailureImage = await toBase64(formData.partFailureImage);
+      const referenceFile1 = await toBase64(formData.referenceFile1);
+      const referenceFile2 = await toBase64(formData.referenceFile2);
 
       // Prepare payload
       const payload = {
         ...formData,
         preventiveFile,
-        partFailureImage,
-        diagnosticsFile,
-        deviceInfoFile,
+        complaintsFile,
         updatesFile,
+        partFailureImage,
+        referenceFile1,
+        referenceFile2,
         partFailure: formData.partFailure || [],
-        requiredSpares: formData.requiredSpares || [], // ✅ Now an array
+        spareReplaced: formData.spareReplaced || [],
+        sparesRequired: formData.sparesRequired || [],
         preventiveSection: formData.preventiveSection || {}
       };
 
-      // Send to Google Apps Script
+      // Send to Google Apps Script (replace with your TNSTC endpoint)
       const response = await fetch(
-        "https://script.google.com/macros/s/AKfycbxBM-XOLrZKpKMIThNDVQ6N7iSnIaOLh_l3jpRTJkxHDnsapqMfwLoFeLPIoUyQCGtl4w/exec",
+        "https://script.google.com/macros/s/AKfycbw9op9Jl7UjYy4t7gxBCazWXs7phEuvb9MWEfiovtUkMd_mQ9TXZXQJU01v4LuaKSFcYA/exec",
         {
           method: "POST",
+          
           body: JSON.stringify(payload),
         }   
       );
@@ -204,26 +247,27 @@ function SwitchPage() {
       // Reset form
       setFormData({
         engineerName: user?.username || "",
-        depo: "",
+        field: "",
         fleetNumber: "",
+        depo: "",
+        imeiNumber: "",
+        odometer: "",
         serviceType: "",
-        vehicleStatus: "",
         reportStatus: "",
         objective: "",
-        preventiveFile: null,
-        odometer: "",
         partFailure: [],
-        partFailureImage: null,
+        spareReplaced: [],
+        sparesRequired: [],
         problemDescription: "",
         actionTaken: "",
-        requiredSpares: [], // ✅ Reset to array
         remarks: "",
-        esimId: "",
-        diagnosticsFile: null,
-        deviceInfoFile: null,
+        preventiveFile: null,
+        complaintsFile: null,
         updatesFile: null,
+        partFailureImage: null,
+        referenceFile1: null,
+        referenceFile2: null,
         preventiveSection: {},
-        imeiNumber: "",
       });
 
     } catch (error) {
@@ -235,8 +279,8 @@ function SwitchPage() {
   };
 
   return (
-    <div className="switch container mt-5">
-      <h2>Switch Page</h2>
+    <div className="tnstc container mt-5">
+      <h2>TNSTC Page</h2>
       <form onSubmit={handleSubmit} className="form-container">
         {/* Engineer Name */}
         <div className="form-group">
@@ -250,8 +294,23 @@ function SwitchPage() {
           />
         </div>
 
-        {/* Fleet Number */}
-        <div className="form-group" style={{position: 'relative'}}>
+        {/* Field Selection */}
+        <div className="form-group">
+          <label>Field:</label>
+          <select
+            name="field"
+            value={formData.field}
+            onChange={handleChange}
+            required
+          >
+            <option value="">Select</option>
+            <option value="Madurai">Madurai</option>
+            <option value="Coimbatore">Coimbatore</option>
+          </select>
+        </div>
+
+         {/* Fleet Number */}
+        <div className="form-group">
           <label>Fleet Number:</label>
           <input
             type="text"
@@ -261,34 +320,10 @@ function SwitchPage() {
             required
           />
           {filteredFleets.length > 0 && (
-            <ul className="dropdown" style={{
-              position: 'absolute',
-              top: '100%',
-              left: 0,
-              right: 0,
-              backgroundColor: 'white',
-              border: '1px solid #ccc',
-              borderRadius: '4px',
-              maxHeight: '200px',
-              overflowY: 'auto',
-              zIndex: 1000,
-              margin: 0,
-              padding: 0,
-              listStyle: 'none'
-            }}>
+            <ul className="dropdown">
               {filteredFleets.map((fleet, index) => (
-                <li 
-                  key={index} 
-                  onClick={() => handleSelectFleet(fleet)}
-                  style={{
-                    padding: '8px 12px',
-                    cursor: 'pointer',
-                    borderBottom: '1px solid #eee'
-                  }}
-                  onMouseEnter={(e) => e.target.style.backgroundColor = '#f5f5f5'}
-                  onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
-                >
-                  {fleet["Fleet Number"]}
+                <li key={index} onClick={() => handleSelectFleet(fleet)}>
+                  {fleet.fleetNumber} - {fleet.depot || "N/A"}
                 </li>
               ))}
             </ul>
@@ -298,7 +333,11 @@ function SwitchPage() {
         {/* Depot */}
         <div className="form-group">
           <label>Depot:</label>
-          <input type="text" value={formData.depo} readOnly style={{backgroundColor: '#f5f5f5'}} />
+          <input 
+            type="text" 
+            value={formData.depo} 
+            readOnly 
+          />
         </div>
 
         {/* IMEI Number */}
@@ -306,8 +345,20 @@ function SwitchPage() {
           <label>IMEI Number:</label>
           <input
             type="text"
+            name="imeiNumber"
             value={formData.imeiNumber}
-            onChange={(e) => setFormData((prev) => ({ ...prev, imeiNumber: e.target.value }))}
+            onChange={handleChange}
+          />
+        </div>
+
+        {/* Odometer */}
+        <div className="form-group">
+          <label>Odometer:</label>
+          <input
+            type="text"
+            name="odometer"
+            value={formData.odometer}
+            onChange={handleChange}
           />
         </div>
 
@@ -352,8 +403,7 @@ function SwitchPage() {
                 <tbody>
                   {[
                     "R-CAM", "FDU", "SDU", "RDU", "IDU", "MIC", "GPS", "GSM", "CAN",
-                    "M-ANN", "BDC COLOR", "BDC TOUCH", "USB", "PLAYBACK",
-                    "R-CAM CONNECTOR", "LED PCB"
+                    "M-ANN", "BDC COLOR", "BDC TOUCH"
                   ].map((item) => (
                     <tr key={item}>
                       <td>{item}</td>
@@ -364,7 +414,6 @@ function SwitchPage() {
                           value="OKAY"
                           checked={formData.preventiveSection[item] === "OKAY"}
                           onChange={(e) => handlePreventiveSection(item, e.target.value)}
-                          required
                         />
                       </td>
                       <td>
@@ -374,33 +423,28 @@ function SwitchPage() {
                           value="NOT_OKAY"
                           checked={formData.preventiveSection[item] === "NOT_OKAY"}
                           onChange={(e) => handlePreventiveSection(item, e.target.value)}
-                          required
                         />
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-              <p className="note">This question requires one response per row</p>
             </div>
 
-            {/* Preventive File */}
             <div className="form-group">
               <label>Preventive Attachment:</label>
               <input
                 type="file"
                 name="preventiveFile"
                 onChange={handleChange}
-                required
               />
             </div>
 
-            {/* Vehicle Status */}
             <div className="form-group">
-              <label>Vehicle Status:</label>
+              <label>Report Status:</label>
               <select
-                name="vehicleStatus"
-                value={formData.vehicleStatus}
+                name="reportStatus"
+                value={formData.reportStatus}
                 onChange={handleChange}
                 required
               >
@@ -411,20 +455,8 @@ function SwitchPage() {
               </select>
             </div>
 
-            {/* Mandatory fields when Open/Close */}
-            {(formData.vehicleStatus === "Open" || formData.vehicleStatus === "Close") && (
+            {(formData.reportStatus === "Open" || formData.reportStatus === "Close") && (
               <>
-                <div className="form-group">
-                  <label>Odometer:</label>
-                  <input
-                    type="text"
-                    name="odometer"
-                    value={formData.odometer}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-                
                 <div className="form-group">
                   <label>Part Failure:</label>
                   <Select
@@ -450,54 +482,77 @@ function SwitchPage() {
                     type="file"
                     name="partFailureImage"
                     onChange={handleChange}
-                    required
                   />
                 </div>
-                
+
+                <div className="form-group">
+                  <label>Spare Replaced:</label>
+                  <Select
+                    isMulti
+                    name="spareReplaced"
+                    options={spareOptions}
+                    value={spareOptions.filter((opt) =>
+                      (formData.spareReplaced || []).includes(opt.value)
+                    )}
+                    onChange={(selected) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        spareReplaced: selected ? selected.map((s) => s.value) : [],
+                      }))
+                    }
+                    placeholder="Select replaced parts"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Spares Required:</label>
+                  <Select
+                    isMulti
+                    name="sparesRequired"
+                    options={spareOptions}
+                    value={spareOptions.filter((opt) =>
+                      (formData.sparesRequired || []).includes(opt.value)
+                    )}
+                    onChange={(selected) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        sparesRequired: selected ? selected.map((s) => s.value) : [],
+                      }))
+                    }
+                    placeholder="Select required parts"
+                  />
+                </div>
+
                 <div className="form-group">
                   <label>Problem Description:</label>
                   <textarea
                     name="problemDescription"
                     value={formData.problemDescription}
                     onChange={handleChange}
-                    required
                   ></textarea>
                 </div>
-                
+
                 <div className="form-group">
                   <label>Action Taken:</label>
                   <textarea
                     name="actionTaken"
                     value={formData.actionTaken}
                     onChange={handleChange}
-                    required
                   ></textarea>
                 </div>
-                
-                {/* ✅ Changed Required Spares to multi-select dropdown */}
+
                 <div className="form-group">
-                  <label>Required Spares:</label>
-                  <Select
-                    isMulti
-                    name="requiredSpares"
-                    options={requiredSparesOptions}
-                    value={requiredSparesOptions.filter((opt) =>
-                      (formData.requiredSpares || []).includes(opt.value)
-                    )}
-                    onChange={(selected) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        requiredSpares: selected ? selected.map((s) => s.value) : [],
-                      }))
-                    }
-                    placeholder="Select required spares"
+                  <label>Complaints Attachment:</label>
+                  <input
+                    type="file"
+                    name="complaintsFile"
+                    onChange={handleChange}
                   />
                 </div>
               </>
             )}
 
-            {/* Remarks & Device Info */}
-            {(formData.vehicleStatus === "None" || formData.vehicleStatus) && (
+            {(formData.reportStatus === "None" || formData.reportStatus) && (
               <>
                 <div className="form-group">
                   <label>Remarks:</label>
@@ -505,38 +560,24 @@ function SwitchPage() {
                     name="remarks"
                     value={formData.remarks}
                     onChange={handleChange}
-                    required
                   ></textarea>
                 </div>
-                
+
                 <div className="form-group">
-                  <label>E-SIM ID:</label>
+                  <label>Reference Attachment 1:</label>
                   <input
-                    type="text"
-                    name="esimId"
-                    value={formData.esimId}
+                    type="file"
+                    name="referenceFile1"
                     onChange={handleChange}
-                    required
                   />
                 </div>
 
                 <div className="form-group">
-                  <label>System Diagnostics:</label>
+                  <label>Reference Attachment 2:</label>
                   <input
                     type="file"
-                    name="diagnosticsFile"
+                    name="referenceFile2"
                     onChange={handleChange}
-                    required
-                  />
-                </div>
-                
-                <div className="form-group">
-                  <label>Device Information:</label>
-                  <input
-                    type="file"
-                    name="deviceInfoFile"
-                    onChange={handleChange}
-                    required
                   />
                 </div>
               </>
@@ -565,17 +606,6 @@ function SwitchPage() {
             {(formData.reportStatus === "Open" || formData.reportStatus === "Close") && (
               <>
                 <div className="form-group">
-                  <label>Odometer:</label>
-                  <input
-                    type="text"
-                    name="odometer"
-                    value={formData.odometer}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-                
-                <div className="form-group">
                   <label>Part Failure:</label>
                   <Select
                     isMulti
@@ -600,47 +630,71 @@ function SwitchPage() {
                     type="file"
                     name="partFailureImage"
                     onChange={handleChange}
-                    required
                   />
                 </div>
-                
+
+                <div className="form-group">
+                  <label>Spare Replaced:</label>
+                  <Select
+                    isMulti
+                    name="spareReplaced"
+                    options={spareOptions}
+                    value={spareOptions.filter((opt) =>
+                      (formData.spareReplaced || []).includes(opt.value)
+                    )}
+                    onChange={(selected) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        spareReplaced: selected ? selected.map((s) => s.value) : [],
+                      }))
+                    }
+                    placeholder="Select replaced parts"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Spares Required:</label>
+                  <Select
+                    isMulti
+                    name="sparesRequired"
+                    options={spareOptions}
+                    value={spareOptions.filter((opt) =>
+                      (formData.sparesRequired || []).includes(opt.value)
+                    )}
+                    onChange={(selected) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        sparesRequired: selected ? selected.map((s) => s.value) : [],
+                      }))
+                    }
+                    placeholder="Select required parts"
+                  />
+                </div>
+
                 <div className="form-group">
                   <label>Problem Description:</label>
                   <textarea
                     name="problemDescription"
                     value={formData.problemDescription}
                     onChange={handleChange}
-                    required
                   ></textarea>
                 </div>
-                
+
                 <div className="form-group">
                   <label>Action Taken:</label>
                   <textarea
                     name="actionTaken"
                     value={formData.actionTaken}
                     onChange={handleChange}
-                    required
                   ></textarea>
                 </div>
-                
-                {/* ✅ Changed Required Spares to multi-select dropdown */}
+
                 <div className="form-group">
-                  <label>Required Spares:</label>
-                  <Select
-                    isMulti
-                    name="requiredSpares"
-                    options={requiredSparesOptions}
-                    value={requiredSparesOptions.filter((opt) =>
-                      (formData.requiredSpares || []).includes(opt.value)
-                    )}
-                    onChange={(selected) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        requiredSpares: selected ? selected.map((s) => s.value) : [],
-                      }))
-                    }
-                    placeholder="Select required spares"
+                  <label>Complaints Attachment:</label>
+                  <input
+                    type="file"
+                    name="complaintsFile"
+                    onChange={handleChange}
                   />
                 </div>
               </>
@@ -654,38 +708,24 @@ function SwitchPage() {
                     name="remarks"
                     value={formData.remarks}
                     onChange={handleChange}
-                    required
                   ></textarea>
                 </div>
-                
+
                 <div className="form-group">
-                  <label>E-SIM ID:</label>
+                  <label>Reference Attachment 1:</label>
                   <input
-                    type="text"
-                    name="esimId"
-                    value={formData.esimId}
+                    type="file"
+                    name="referenceFile1"
                     onChange={handleChange}
-                    required
                   />
                 </div>
 
                 <div className="form-group">
-                  <label>System Diagnostics:</label>
+                  <label>Reference Attachment 2:</label>
                   <input
                     type="file"
-                    name="diagnosticsFile"
+                    name="referenceFile2"
                     onChange={handleChange}
-                    required
-                  />
-                </div>
-                
-                <div className="form-group">
-                  <label>Device Information:</label>
-                  <input
-                    type="file"
-                    name="deviceInfoFile"
-                    onChange={handleChange}
-                    required
                   />
                 </div>
               </>
@@ -697,7 +737,7 @@ function SwitchPage() {
         {formData.serviceType === "Updates" && (
           <>
             <div className="form-group">
-              <label>Objectives:</label>
+              <label>Objective:</label>
               <select
                 name="objective"
                 value={formData.objective}
@@ -705,12 +745,10 @@ function SwitchPage() {
                 required
               >
                 <option value="">Select</option>
-                <option value="LED_FW">LED FW</option>
-                <option value="XML">XML</option>
-                <option value="Firmware Update">Firmware Update</option>
-                <option value="SIM Installation">SIM Installation</option>
-                <option value="Software Update">Software Update</option>
-                <option value="PIS Update">PIS Update</option>
+                <option value="LED_FW">LED FW 1.3.0</option>
+                <option value="MNVR_FW">MNVR FW 2.1</option>
+                <option value="FIRMWARE">FIRMWARE 38</option>
+                <option value="SOFTWARE_UPDATE">SOFTWARE UPDATE</option>
               </select>
             </div>
 
@@ -720,16 +758,73 @@ function SwitchPage() {
                 type="file"
                 name="updatesFile"
                 onChange={handleChange}
-                required
               />
             </div>
 
-            {/* Vehicle Status */}
+            <div className="form-group preventive-section">
+              <h4 className="section-title">Preventive Section</h4>
+              <div className="button-group mb-2">
+                <button type="button" onClick={() => handleMarkAll("OKAY")} className="btn btn-success btn-sm me-2">
+                  All OK
+                </button>
+                <button type="button" onClick={() => handleMarkAll("NOT_OKAY")} className="btn btn-danger btn-sm">
+                  All Not OK
+                </button>
+              </div>
+
+              <table className="preventive-table">
+                <thead>
+                  <tr>
+                    <th>Component</th>
+                    <th>OKAY</th>
+                    <th>NOT OKAY</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    "R-CAM", "FDU", "SDU", "RDU", "IDU", "MIC", "GPS", "GSM", "CAN",
+                    "M-ANN", "BDC COLOR", "BDC TOUCH"
+                  ].map((item) => (
+                    <tr key={item}>
+                      <td>{item}</td>
+                      <td>
+                        <input
+                          type="radio"
+                          name={item}
+                          value="OKAY"
+                          checked={formData.preventiveSection[item] === "OKAY"}
+                          onChange={(e) => handlePreventiveSection(item, e.target.value)}
+                        />
+                      </td>
+                      <td>
+                        <input
+                          type="radio"
+                          name={item}
+                          value="NOT_OKAY"
+                          checked={formData.preventiveSection[item] === "NOT_OKAY"}
+                          onChange={(e) => handlePreventiveSection(item, e.target.value)}
+                        />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
             <div className="form-group">
-              <label>Vehicle Status:</label>
+              <label>Preventive Attachment:</label>
+              <input
+                type="file"
+                name="preventiveFile"
+                onChange={handleChange}
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Report Status:</label>
               <select
-                name="vehicleStatus"
-                value={formData.vehicleStatus}
+                name="reportStatus"
+                value={formData.reportStatus}
                 onChange={handleChange}
                 required
               >
@@ -740,19 +835,8 @@ function SwitchPage() {
               </select>
             </div>
 
-            {(formData.vehicleStatus === "Open" || formData.vehicleStatus === "Close") && (
+            {(formData.reportStatus === "Open" || formData.reportStatus === "Close") && (
               <>
-                <div className="form-group">
-                  <label>Odometer:</label>
-                  <input
-                    type="text"
-                    name="odometer"
-                    value={formData.odometer}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-                
                 <div className="form-group">
                   <label>Part Failure:</label>
                   <Select
@@ -778,53 +862,77 @@ function SwitchPage() {
                     type="file"
                     name="partFailureImage"
                     onChange={handleChange}
-                    required
                   />
                 </div>
-                
+
+                <div className="form-group">
+                  <label>Spare Replaced:</label>
+                  <Select
+                    isMulti
+                    name="spareReplaced"
+                    options={spareOptions}
+                    value={spareOptions.filter((opt) =>
+                      (formData.spareReplaced || []).includes(opt.value)
+                    )}
+                    onChange={(selected) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        spareReplaced: selected ? selected.map((s) => s.value) : [],
+                      }))
+                    }
+                    placeholder="Select replaced parts"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Spares Required:</label>
+                  <Select
+                    isMulti
+                    name="sparesRequired"
+                    options={spareOptions}
+                    value={spareOptions.filter((opt) =>
+                      (formData.sparesRequired || []).includes(opt.value)
+                    )}
+                    onChange={(selected) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        sparesRequired: selected ? selected.map((s) => s.value) : [],
+                      }))
+                    }
+                    placeholder="Select required parts"
+                  />
+                </div>
+
                 <div className="form-group">
                   <label>Problem Description:</label>
                   <textarea
                     name="problemDescription"
                     value={formData.problemDescription}
                     onChange={handleChange}
-                    required
                   ></textarea>
                 </div>
-                
+
                 <div className="form-group">
                   <label>Action Taken:</label>
                   <textarea
                     name="actionTaken"
                     value={formData.actionTaken}
                     onChange={handleChange}
-                    required
                   ></textarea>
                 </div>
-                
-                {/* ✅ Changed Required Spares to multi-select dropdown */}
+
                 <div className="form-group">
-                  <label>Required Spares:</label>
-                  <Select
-                    isMulti
-                    name="requiredSpares"
-                    options={requiredSparesOptions}
-                    value={requiredSparesOptions.filter((opt) =>
-                      (formData.requiredSpares || []).includes(opt.value)
-                    )}
-                    onChange={(selected) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        requiredSpares: selected ? selected.map((s) => s.value) : [],
-                      }))
-                    }
-                    placeholder="Select required spares"
+                  <label>Complaints Attachment:</label>
+                  <input
+                    type="file"
+                    name="complaintsFile"
+                    onChange={handleChange}
                   />
                 </div>
               </>
             )}
 
-            {(formData.vehicleStatus === "None" || formData.vehicleStatus) && (
+            {(formData.reportStatus === "None" || formData.reportStatus) && (
               <>
                 <div className="form-group">
                   <label>Remarks:</label>
@@ -832,38 +940,24 @@ function SwitchPage() {
                     name="remarks"
                     value={formData.remarks}
                     onChange={handleChange}
-                    required
                   ></textarea>
                 </div>
-                
+
                 <div className="form-group">
-                  <label>E-SIM ID:</label>
+                  <label>Reference Attachment 1:</label>
                   <input
-                    type="text"
-                    name="esimId"
-                    value={formData.esimId}
+                    type="file"
+                    name="referenceFile1"
                     onChange={handleChange}
-                    required
                   />
                 </div>
 
                 <div className="form-group">
-                  <label>System Diagnostics:</label>
+                  <label>Reference Attachment 2:</label>
                   <input
                     type="file"
-                    name="diagnosticsFile"
+                    name="referenceFile2"
                     onChange={handleChange}
-                    required
-                  />
-                </div>
-                
-                <div className="form-group">
-                  <label>Device Information:</label>
-                  <input
-                    type="file"
-                    name="deviceInfoFile"
-                    onChange={handleChange}
-                    required
                   />
                 </div>
               </>
@@ -880,4 +974,4 @@ function SwitchPage() {
   );
 }
 
-export default SwitchPage;
+export default TNSTC;

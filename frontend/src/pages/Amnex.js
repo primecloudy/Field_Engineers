@@ -7,6 +7,7 @@ import Select from "react-select";
 function Amnex() {
   const { user } = useContext(AuthContext);
   const [fleetData, setFleetData] = useState([]);
+  const [filteredFleets, setFilteredFleets] = useState([]);
   const [loading, setLoading] = useState(false);
 
   // ✅ File input refs
@@ -42,364 +43,364 @@ function Amnex() {
         const response = await fetch("/MASTER_DATA_ADAIKAL.xlsx");
         const arrayBuffer = await response.arrayBuffer();
         const workbook = XLSX.read(arrayBuffer, { type: "array" });
-        const sheet = workbook.Sheets["AMX_MASTER"];
-        const jsonData = XLSX.utils.sheet_to_json(sheet);
-
-        const cleanData = jsonData.map((row) => ({
-          fleetNumber: row["Fleet Number"],
-          depo: row["Depot"],
-          deviceId: row["Device ID"],
-        }));
-
-        setFleetData(cleanData);
+        
+        // Try different possible sheet names
+        const sheet = workbook.Sheets["AMX_MASTER"] || 
+                     workbook.Sheets["Sheet1"] || 
+                     workbook.Sheets[workbook.SheetNames[0]];
+        
+        if (sheet) {
+          const jsonData = XLSX.utils.sheet_to_json(sheet);
+          console.log("✅ Excel Rows:", jsonData);
+          setFleetData(jsonData);
+        } else {
+          console.error("❌ No sheet found in Excel file");
+        }
       } catch (err) {
         console.error("Error loading Excel file:", err);
+        alert("Failed to load fleet data. Please refresh the page or contact support.");
       }
     };
     loadExcel();
   }, []);
 
-  // ✅ Fleet auto-fill
-  const handleFleetSelect = (selectedOption) => {
-    const fleetNumber = selectedOption?.value || "";
-    const selected = fleetData.find((item) => item.fleetNumber === fleetNumber);
+  // ✅ Handle typing Fleet Number
+  const handleFleetNumberChange = (e) => {
+    const value = e.target.value;
+    setFormData((prev) => ({ ...prev, fleetNumber: value }));
 
-    if (selected) {
-      setFormData({
-        ...formData,
-        fleetNumber: selected.fleetNumber,
-        depo: selected.depo,
-        deviceId: selected.deviceId,
-        engineerName: user?.username || formData.engineerName,
+    if (value.length > 0) {
+      const filtered = fleetData.filter((fleet) => {
+        // Try multiple possible column names for fleet number
+        const fleetNumber = fleet["Fleet Number"] || fleet["Fleet Numb -1"] || fleet["FleetNumber"] || "";
+        return String(fleetNumber)
+          .toLowerCase()
+          .includes(value.toLowerCase());
       });
+      setFilteredFleets(filtered);
+    } else {
+      setFilteredFleets([]);
     }
+  };
+
+  // ✅ Handle selecting a Fleet from dropdown
+  const handleSelectFleet = (fleet) => {
+    setFormData((prev) => ({
+      ...prev,
+      fleetNumber: fleet["Fleet Number"] || fleet["Fleet Numb -1"] || fleet["FleetNumber"] || "",
+      depo: fleet["Depot"] || fleet["Depo"] || "",
+      deviceId: fleet["Device ID"] || fleet["IMEI"] || fleet["IMEI Number"] || "",
+    }));
+    setFilteredFleets([]);
   };
 
   // ✅ Handle input/file change
   const handleChange = (e) => {
-    const { name, value, files } = e.target;
-    if (files && files[0]) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormData((prev) => ({ ...prev, [name]: reader.result })); // save Base64
-      };
-      reader.readAsDataURL(files[0]);
+    const { name, value, type, files } = e.target;
+    if (type === "file") {
+      setFormData({ ...formData, [name]: files[0] });
     } else {
-      setFormData((prev) => ({ ...prev, [name]: value }));
+      setFormData({ ...formData, [name]: value });
     }
   };
 
   // ✅ Submit form to GAS
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      let payload = { ...formData, type: "amnex" };
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setLoading(true);
 
-      // 🚫 Remove tampering fields if "No"
-      if (formData.tampering === "No") {
-        delete payload.tamperingImage;
-        delete payload.missingComponent;
-        delete payload.replacedComponent;
-      }
+  try {
+    console.log("Starting form submission...");
+    
+    // Prepare payload
+    let payload = { 
+      engineerName: formData.engineerName,
+      fleetNumber: formData.fleetNumber,
+      depo: formData.depo,
+      deviceId: formData.deviceId,
+      vehicleStatus: formData.vehicleStatus,
+      sparesUsed: formData.sparesUsed,
+      remarks: formData.remarks,
+      tampering: formData.tampering,
+    };
 
-      const response = await fetch(
-        "https://script.google.com/macros/s/AKfycbzfmM9sJ6H5GgBcY8TTxNY76wA3CrL8k5OQTLOXFwqoISiFWnygtVvAFoSRiUZdk1on1A/exec",
-        {
-          method: "POST",
-          body: new URLSearchParams(payload),
-        }
-      );
-
-      const result = await response.json();
-      if (result.status === "success") {
-        alert("✅ Form submitted!\n📄 PDF Links saved in sheet.");
-
-        // ✅ Reset form
-        setFormData({
-          engineerName: user?.username || "",
-          fleetNumber: "",
-          depo: "",
-          deviceId: "",
-          vehicleStatus: "Open",
-          sparesUsed: "",
-          systemDiagnostics: null,
-          remarks: "",
-          tampering: "No",
-          tamperingImage: null,
-          missingComponent: "",
-          replacedComponent: "",
-        });
-
-        // ✅ Reset file inputs manually
-        if (fileInputRef.current) fileInputRef.current.value = "";
-        if (tamperingInputRef.current) tamperingInputRef.current.value = "";
-      } else {
-        alert("❌ Error: " + result.message);
-      }
-    } catch (err) {
-      console.error("Submit error:", err);
-      alert("Failed to submit form!");
+    // Add tampering details only if tampering is "Yes"
+    if (formData.tampering === "Yes") {
+      payload.missingComponent = formData.missingComponent;
+      payload.replacedComponent = formData.replacedComponent;
     }
-    setLoading(false);
-  };
+
+    // Handle file uploads
+    if (formData.systemDiagnostics) {
+      const systemDiagnosticsBase64 = await fileToBase64(formData.systemDiagnostics);
+      payload.systemDiagnostics = systemDiagnosticsBase64;
+    }
+
+    if (formData.tampering === "Yes" && formData.tamperingImage) {
+      const tamperingImageBase64 = await fileToBase64(formData.tamperingImage);
+      payload.tamperingImage = tamperingImageBase64;
+    }
+
+    console.log("Payload prepared:", payload);
+
+    // ✅ REPLACE WITH YOUR ACTUAL GOOGLE APPS SCRIPT URL
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbziVp2voXhBuVPfnv0WV8SNSSiRwnwQ-256jUc33kZSXrsBR5VtyZq0ixfki8yVYIg2rw/exec";
+    
+    const response = await fetch(SCRIPT_URL, {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+    
+    const result = await response.json();
+    console.log("Response:", result);
+    
+    if (result.result === "success") {
+      alert("✅ Form submitted successfully! PDF generated: " + result.pdfUrl);
+      
+      // Reset form
+      setFormData({
+        engineerName: user?.username || "",
+        fleetNumber: "",
+        depo: "",
+        deviceId: "",
+        vehicleStatus: "Open",
+        sparesUsed: "",
+        systemDiagnostics: null,
+        remarks: "",
+        tampering: "No",
+        tamperingImage: null,
+        missingComponent: "",
+        replacedComponent: "",
+      });
+
+      // Reset file inputs
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      if (tamperingInputRef.current) tamperingInputRef.current.value = "";
+    } else {
+      alert("❌ Error: " + result.message);
+    }
+  } catch (err) {
+    console.error("Submit error details:", err);
+    alert("Failed to submit form! Check console for details.");
+  }
+  setLoading(false);
+};
+
+// Helper function to convert file to base64
+const fileToBase64 = (file) => new Promise((resolve, reject) => {
+  const reader = new FileReader();
+  reader.readAsDataURL(file);
+  reader.onload = () => resolve(reader.result);
+  reader.onerror = error => reject(error);
+});
 
   return (
-    <div className="amnex-container">
-      <div className="amnex-header">
-        <h1>Amnex Service Form</h1>
-        <p>Complete the form below to submit a new service request</p>
-      </div>
-      
-      <div className="amnex-content">
-        <form className="amnex-form" onSubmit={handleSubmit}>
-          <div className="form-section">
-            <div className="section-header">
-              <div className="section-icon">👤</div>
-              <h3>Engineer Information</h3>
-            </div>
-            <div className="form-grid">
-              <div className="input-group">
-                <label className="input-label">Engineer Name *</label>
-                <div className="input-container">
-                  <input 
-                    type="text" 
-                    className="form-input" 
-                    value={formData.engineerName} 
-                    readOnly 
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
+    <div className="mtc container mt-5">
+      <h2>Amnex Service Form</h2>
+      <form onSubmit={handleSubmit} className="form-container">
+        {/* Engineer Name */}
+        <div className="form-group">
+          <label>Engineer Name:</label>
+          <input
+            type="text"
+            name="engineerName"
+            value={formData.engineerName}
+            onChange={handleChange}
+            required
+          />
+        </div>
 
-          <div className="form-section">
-            <div className="section-header">
-              <div className="section-icon">🚛</div>
-              <h3>Vehicle Details</h3>
-            </div>
-            <div className="form-grid">
-              <div className="input-group">
-                <label className="input-label">Fleet Number *</label>
-                <div className="input-container">
-                  <Select
-                    className="custom-select"
-                    classNamePrefix="custom-select"
-                    options={fleetData.map((f) => ({ value: f.fleetNumber, label: f.fleetNumber }))}
-                    onChange={handleFleetSelect}
-                    placeholder="Select Fleet Number"
-                    value={
-                      formData.fleetNumber
-                        ? { value: formData.fleetNumber, label: formData.fleetNumber }
-                        : null
-                    }
-                    isClearable
-                  />
-                </div>
-              </div>
-
-              <div className="input-group">
-                <label className="input-label">Depot *</label>
-                <div className="input-container">
-                  <input type="text" className="form-input" value={formData.depo} readOnly />
-                </div>
-              </div>
-
-              <div className="input-group">
-                <label className="input-label">Device ID *</label>
-                <div className="input-container">
-                  <input
-                    type="text"
-                    name="deviceId"
-                    className="form-input"
-                    value={formData.deviceId}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="input-group">
-                <label className="input-label">Vehicle Status *</label>
-                <div className="input-container">
-                  <select
-                    name="vehicleStatus"
-                    className="form-input"
-                    value={formData.vehicleStatus}
-                    onChange={handleChange}
-                    required
+        {/* Fleet Number */}
+        <div className="form-group" style={{position: 'relative'}}>
+          <label>Fleet Number:</label>
+          <input
+            type="text"
+            value={formData.fleetNumber}
+            onChange={handleFleetNumberChange}
+            placeholder="Type Fleet Number"
+            required
+          />
+          {filteredFleets.length > 0 && (
+            <ul className="dropdown" style={{
+              position: 'absolute',
+              top: '100%',
+              left: 0,
+              right: 0,
+              backgroundColor: 'white',
+              border: '1px solid #ccc',
+              borderRadius: '4px',
+              maxHeight: '200px',
+              overflowY: 'auto',
+              zIndex: 1000,
+              margin: 0,
+              padding: 0,
+              listStyle: 'none'
+            }}>
+              {filteredFleets.map((fleet, index) => {
+                const fleetNumber = fleet["Fleet Number"] || fleet["Fleet Numb -1"] || fleet["FleetNumber"] || "";
+                return (
+                  <li 
+                    key={index} 
+                    onClick={() => handleSelectFleet(fleet)}
+                    style={{
+                      padding: '8px 12px',
+                      cursor: 'pointer',
+                      borderBottom: '1px solid #eee'
+                    }}
+                    onMouseEnter={(e) => e.target.style.backgroundColor = '#f5f5f5'}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
                   >
-                    <option value="Open">Open</option>
-                    <option value="Close">Close</option>
-                  </select>
-                </div>
-              </div>
-            </div>
+                    {fleetNumber}
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
+
+        {/* Depot */}
+        <div className="form-group">
+          <label>Depot:</label>
+          <input 
+            type="text" 
+            value={formData.depo} 
+            readOnly 
+            style={{backgroundColor: '#f5f5f5'}}
+          />
+        </div>
+
+        {/* Device ID */}
+        <div className="form-group">
+          <label>Device ID:</label>
+          <input
+            type="text"
+            name="deviceId"
+            value={formData.deviceId}
+            onChange={handleChange}
+            required
+          />
+        </div>
+
+        {/* Vehicle Status */}
+        <div className="form-group">
+          <label>Vehicle Status:</label>
+          <select
+            name="vehicleStatus"
+            value={formData.vehicleStatus}
+            onChange={handleChange}
+            required
+          >
+            <option value="Open">Open</option>
+            <option value="Close">Close</option>
+          </select>
+        </div>
+
+        {/* Spares Required */}
+        <div className="form-group">
+          <label>Spares Required:</label>
+          <input
+            type="text"
+            name="sparesUsed"
+            value={formData.sparesUsed}
+            onChange={handleChange}
+            required
+          />
+        </div>
+
+        {/* System Diagnostics */}
+        <div className="form-group">
+          <label>System Diagnostics:</label>
+          <input
+            type="file"
+            name="systemDiagnostics"
+            onChange={handleChange}
+            ref={fileInputRef}
+            required
+          />
+        </div>
+
+        {/* Remarks */}
+        <div className="form-group">
+          <label>Remarks:</label>
+          <textarea
+            name="remarks"
+            value={formData.remarks}
+            onChange={handleChange}
+            required
+          ></textarea>
+        </div>
+
+        {/* Tampering */}
+        <div className="form-group">
+          <label>Tampering Happened?</label>
+          <div>
+            <label>
+              <input
+                type="radio"
+                name="tampering"
+                value="No"
+                checked={formData.tampering === "No"}
+                onChange={handleChange}
+                required
+              />
+              No
+            </label>
+            <label style={{marginLeft: '15px'}}>
+              <input
+                type="radio"
+                name="tampering"
+                value="Yes"
+                checked={formData.tampering === "Yes"}
+                onChange={handleChange}
+              />
+              Yes
+            </label>
           </div>
+        </div>
 
-          <div className="form-section">
-            <div className="section-header">
-              <div className="section-icon">🔧</div>
-              <h3>Service Details</h3>
+        {/* Tampering Details (only show if Yes) */}
+        {formData.tampering === "Yes" && (
+          <>
+            <div className="form-group">
+              <label>Tampering Image:</label>
+              <input
+                type="file"
+                name="tamperingImage"
+                onChange={handleChange}
+                ref={tamperingInputRef}
+                required
+              />
             </div>
-            <div className="form-grid">
-              <div className="input-group">
-                <label className="input-label">Spares Required *</label>
-                <div className="input-container">
-                  <input
-                    type="text"
-                    name="sparesUsed"
-                    className="form-input"
-                    value={formData.sparesUsed}
-                    onChange={handleChange}
-                  />
-                </div>
-              </div>
 
-              <div className="input-group">
-                <label className="input-label">System Diagnostics *</label>
-                <div className="input-container file-input-container">
-                  <input
-                    type="file"
-                    name="systemDiagnostics"
-                    className="file-input"
-                    onChange={handleChange}
-                    ref={fileInputRef}
-                    required
-                  />
-                  <div className="file-input-custom">
-                    <span className="file-input-text">
-                      {formData.systemDiagnostics ? "File selected" : "Choose file"}
-                    </span>
-                    <span className="file-input-button">Browse</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="input-group full-width">
-                <label className="input-label">Remarks *</label>
-                <div className="input-container">
-                  <textarea
-                    name="remarks"
-                    className="form-input textarea"
-                    rows="3"
-                    value={formData.remarks}
-                    onChange={handleChange}
-                    required
-                  ></textarea>
-                </div>
-              </div>
+            <div className="form-group">
+              <label>Missing Component:</label>
+              <input
+                type="text"
+                name="missingComponent"
+                value={formData.missingComponent}
+                onChange={handleChange}
+                required
+              />
             </div>
-          </div>
 
-          <div className="form-section">
-            <div className="section-header">
-              <div className="section-icon">⚠️</div>
-              <h3>Tampering Information</h3>
+            <div className="form-group">
+              <label>Replaced Component:</label>
+              <input
+                type="text"
+                name="replacedComponent"
+                value={formData.replacedComponent}
+                onChange={handleChange}
+                required
+              />
             </div>
-            <div className="form-grid">
-              <div className="input-group">
-                <label className="input-label">Tampering Happened? *</label>
-                <div className="input-container">
-                  <div className="radio-group">
-                    <label className="radio-label">
-                      <input
-                        type="radio"
-                        name="tampering"
-                        value="No"
-                        checked={formData.tampering === "No"}
-                        onChange={handleChange}
-                        required
-                      />
-                      <span className="radio-custom"></span>
-                      No
-                    </label>
-                    <label className="radio-label">
-                      <input
-                        type="radio"
-                        name="tampering"
-                        value="Yes"
-                        checked={formData.tampering === "Yes"}
-                        onChange={handleChange}
-                      />
-                      <span className="radio-custom"></span>
-                      Yes
-                    </label>
-                  </div>
-                </div>
-              </div>
+          </>
+        )}
 
-              {formData.tampering === "Yes" && (
-                <>
-                  <div className="input-group">
-                    <label className="input-label">Tampering Image *</label>
-                    <div className="input-container file-input-container">
-                      <input
-                        type="file"
-                        name="tamperingImage"
-                        className="file-input"
-                        onChange={handleChange}
-                        ref={tamperingInputRef}
-                        required
-                      />
-                      <div className="file-input-custom">
-                        <span className="file-input-text">
-                          {formData.tamperingImage ? "Image selected" : "Choose image"}
-                        </span>
-                        <span className="file-input-button">Browse</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="input-group">
-                    <label className="input-label">Missing Component *</label>
-                    <div className="input-container">
-                      <input
-                        type="text"
-                        name="missingComponent"
-                        className="form-input"
-                        value={formData.missingComponent}
-                        onChange={handleChange}
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <div className="input-group">
-                    <label className="input-label">Replaced Component *</label>
-                    <div className="input-container">
-                      <input
-                        type="text"
-                        name="replacedComponent"
-                        className="form-input"
-                        value={formData.replacedComponent}
-                        onChange={handleChange}
-                        required
-                      />
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-
-          <div className="form-actions">
-            <button type="submit" className="submit-button" disabled={loading}>
-              {loading ? (
-                <>
-                  <span className="button-spinner"></span>
-                  Submitting...
-                </>
-              ) : (
-                <>
-                  <span className="button-icon">📤</span>
-                  Submit Form
-                </>
-              )}
-            </button>
-          </div>
-        </form>
-      </div>
+        {/* Submit Button */}
+        <button type="submit" disabled={loading} className="btn btn-primary mt-3">
+          {loading ? "Submitting..." : "Submit"}
+        </button>
+      </form>
     </div>
   );
 }
