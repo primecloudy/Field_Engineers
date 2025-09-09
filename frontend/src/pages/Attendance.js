@@ -4,7 +4,7 @@ import { AuthContext } from "../context/AuthContext";
 import "./Attendance.css"; // 👈 new CSS file for styling
 
 const WEB_APP_URL =
-  "https://script.google.com/macros/s/AKfycbyfYnOThGBe7rx02BWI149VYDP_JrXpNQOWmZ5gpSMghDgLScBgQ-jePt3VJe3n9kv7/exec";
+  "https://script.google.com/macros/s/AKfycbyViRo8-yTqT-d2Nf2G7JEvzyp0Ty2vNh5ksCYqvW3EOlIVkML7rSl_94Qrjb0gsqJzjQ/exec";
 
 const Attendance = () => {
   const { attendanceDone, markAttendance, user } = useContext(AuthContext);
@@ -16,12 +16,22 @@ const Attendance = () => {
   const [location, setLocation] = useState({ lat: "", lng: "" });
   const [loadingLocation, setLoadingLocation] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [currentDateTime, setCurrentDateTime] = useState(new Date()); // 👈 new state for date/time
 
   useEffect(() => {
     if (attendanceDone) {
       navigate("/home");
     }
   }, [attendanceDone, navigate]);
+
+  // 👇 new useEffect for updating date/time every second
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentDateTime(new Date());
+    }, 1000);
+    
+    return () => clearInterval(timer); // Cleanup on component unmount
+  }, []);
 
   const handlePhotoChange = (e) => {
     const file = e.target.files[0];
@@ -52,53 +62,83 @@ const Attendance = () => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    if (!photo) {
-      alert("⚠️ Please upload your photo!");
-      return;
-    }
-    if (!location.lat || !location.lng) {
-      alert("⚠️ Location is mandatory!");
-      return;
-    }
+  if (!photo) {
+    alert("⚠️ Please upload your photo!");
+    return;
+  }
+  if (!location.lat || !location.lng) {
+    alert("⚠️ Location is mandatory!");
+    return;
+  }
 
-    try {
-      setSubmitting(true);
-      const reader = new FileReader();
-      reader.readAsDataURL(photo);
+  try {
+    setSubmitting(true);
+    const reader = new FileReader();
+    reader.readAsDataURL(photo);
 
-      reader.onloadend = async () => {
-        const base64Data = reader.result.split(",")[1];
+    reader.onloadend = async () => {
+      const base64Data = reader.result.split(",")[1];
 
-        const payload = {
-          engineerName,
-          location: `${location.lat}, ${location.lng}`,
-          photo: base64Data,
-        };
-
-        const res = await fetch(WEB_APP_URL, {
-          method: "POST",
-          body: new URLSearchParams(payload),
-        });
-
-        const result = await res.json();
-        console.log("✅ GAS Response:", result);
-
-        markAttendance();
-        alert("✅ Attendance submitted!\n📄 PDF Link: " + result.fileUrl);
-        navigate("/home");
+      const payload = {
+        engineerName,
+        location: `${location.lat}, ${location.lng}`,
+        photo: base64Data,
+        timestamp: new Date().toISOString(),
       };
-    } catch (err) {
-      alert("❌ Error submitting: " + err.message);
-      setSubmitting(false);
-    }
-  };
+
+   const res = await fetch(WEB_APP_URL, {
+  method: "POST",
+  // headers: { "Content-Type": "application/json" },
+  body: JSON.stringify(payload),
+});
+
+
+      const result = await res.json();
+      console.log("✅ GAS Response:", result);
+
+      if (result.status === "success") {
+        markAttendance();
+        alert("✅ Attendance submitted!\n📄 PDF Link: " + result.fileUrl + "\n⏰ Time: " + result.timestamp);
+        navigate("/home");
+      } else {
+        alert("❌ Error: " + result.message);
+        setSubmitting(false);
+      }
+    };
+  } catch (err) {
+    alert("❌ Error submitting: " + err.message);
+    setSubmitting(false);
+  }
+};
+
+  // Format date and time for display
+  const formattedDate = currentDateTime.toLocaleDateString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+  
+  const formattedTime = currentDateTime.toLocaleTimeString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: true
+  });
 
   return (
     <div className="attendance-wrapper">
       <div className="attendance-card">
         <h2 className="attendance-title">📋 Attendance Form</h2>
+        
+        {/* 👇 New date and time display */}
+        <div className="datetime-display">
+          <div className="current-date">{formattedDate}</div>
+          <div className="current-time">{formattedTime}</div>
+        </div>
+        
         <form onSubmit={handleSubmit} className="attendance-form">
           {/* Engineer Name */}
           <div className="form-group">
@@ -116,12 +156,11 @@ const Attendance = () => {
               required
             />
             {photoPreview && (
-  <div className="preview-box text-center">
-    <p>📷 Photo Preview:</p>
-    <img src={photoPreview} alt="Preview" />
-  </div>
-)}
-
+              <div className="preview-box text-center">
+                <p>📷 Photo Preview:</p>
+                <img src={photoPreview} alt="Preview" />
+              </div>
+            )}
           </div>
 
           {/* Location */}

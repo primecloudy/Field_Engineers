@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import "./Home.css";
@@ -6,9 +6,25 @@ import "./Home.css";
 function Home() {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const handleLogout = () => {
     navigate("/logoutattendance");
+  };
+
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
+
+  const handleTrackLocation = () => {
+  // Open the track location link in a new tab
+  window.open("https://track.primeedge.co.in/", "_blank");
+};
+
+
+  const handleValidateData = () => {
+    alert("Validate my data clicked!");
+    // Add validation logic here
   };
 
   return (
@@ -16,6 +32,25 @@ function Home() {
       {/* Header */}
       <div className="home-header">
         <div className="header-content">
+          
+          {/* Menu button on left */}
+          {/* <div className="menu-section">
+            <button className="menu-btn" onClick={toggleMenu}>
+              ☰
+            </button>
+            {isMenuOpen && (
+              <div className="menu-dropdown">
+                <button onClick={handleTrackLocation} className="menu-item">
+                  📍 Track My Location
+                </button>
+                <button onClick={handleValidateData} className="menu-item">
+                  ✅ Validate My Data
+                </button>
+              </div>
+            )}
+          </div> */}
+
+          {/* Logo */}
           <div className="logo-section">
             <div className="logo">
               <span className="logo-icon"></span>
@@ -24,6 +59,7 @@ function Home() {
             <p className="tagline">Maintenance Management System</p>
           </div>
 
+          {/* User Info */}
           {user && (
             <div className="user-info">
               <div className="user-details">
@@ -59,7 +95,7 @@ function Home() {
             </div>
             <div className="card-arrow">→</div>
           </Link>
-          
+
           <Link to="/TNSTC" className="card tnstc-card">
             <div className="card-icon">🚎</div>
             <div className="card-content">
@@ -68,7 +104,7 @@ function Home() {
             </div>
             <div className="card-arrow">→</div>
           </Link>
-          
+
           <Link to="/MTC" className="card mtc-card">
             <div className="card-icon">🚍</div>
             <div className="card-content">
@@ -77,7 +113,7 @@ function Home() {
             </div>
             <div className="card-arrow">→</div>
           </Link>
-          
+
           <Link to="/switch" className="card switch-card">
             <div className="card-icon">🚎</div>
             <div className="card-content">

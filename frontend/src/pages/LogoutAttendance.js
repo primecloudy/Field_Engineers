@@ -1,11 +1,11 @@
 // src/pages/LogoutAttendance.js
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import "./LogoutAttendance.css";
 
 const WEB_APP_URL =
-  "https://script.google.com/macros/s/AKfycbz4zEMYo2CHeqRI5Ba52TeCw-85GnrWX_rFXR4V1eQv_8sjFIhEGaBKA6OtoZ6Z7yHkAQ/exec";
+  "https://script.google.com/macros/s/AKfycby5szY6aVvOjdFO2RtsxQS9EEx2SnNwyY_ExbMHmmd4YXEFe0U3DN72ZE_UEr5-nKPPlg/exec";
 
 const LogoutAttendance = () => {
   const { user, setUser, setAttendanceDone } = useContext(AuthContext);
@@ -17,6 +17,15 @@ const LogoutAttendance = () => {
   const [location, setLocation] = useState({ lat: "", lng: "" });
   const [loadingLocation, setLoadingLocation] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [currentDateTime, setCurrentDateTime] = useState(new Date()); // 👈 live date/time
+
+  // Update date/time every second
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentDateTime(new Date());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   const handlePhotoChange = (e) => {
     const file = e.target.files[0];
@@ -65,25 +74,27 @@ const LogoutAttendance = () => {
       reader.readAsDataURL(photo);
 
       reader.onloadend = async () => {
-        const base64Data = reader.result;
+        const base64Data = reader.result.split(",")[1]; // only base64, no prefix
 
         const payload = {
           engineerName,
           location: `${location.lat}, ${location.lng}`,
           photo: base64Data,
-          type: "logout",
+          timestamp: new Date().toISOString(), // 👈 send timestamp
         };
 
         const res = await fetch(WEB_APP_URL, {
           method: "POST",
-          body: new URLSearchParams(payload),
+          body: JSON.stringify(payload),
         });
 
         const result = await res.json();
         console.log("✅ GAS Response:", result);
 
         if (result.status === "success") {
-          alert(`✅ Logout attendance submitted!\n📄 PDF Link: ${result.fileUrl}`);
+          alert(
+            `✅ Logout attendance submitted!\n🕒 Time: ${result.timestamp}\n📸 Photo: ${result.photoUrl}`
+          );
         } else {
           alert("❌ Error: " + result.message);
         }
@@ -100,10 +111,31 @@ const LogoutAttendance = () => {
     }
   };
 
+  // Format date/time for UI
+  const formattedDate = currentDateTime.toLocaleDateString("en-US", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+  const formattedTime = currentDateTime.toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true,
+  });
+
   return (
     <div className="logout-page">
       <div className="logout-card">
-        <h2 className="logout-title">Logout Attendance</h2>
+        <h2 className="logout-title">🚪 Logout Attendance</h2>
+
+        {/* 👇 Date & Time */}
+        <div className="datetime-display">
+          <div className="current-date">{formattedDate}</div>
+          <div className="current-time">{formattedTime}</div>
+        </div>
+
         <form onSubmit={handleSubmit}>
           {/* Engineer Name */}
           <div className="form-group">
@@ -140,7 +172,7 @@ const LogoutAttendance = () => {
 
           {/* Submit */}
           <button type="submit" disabled={submitting}>
-            {submitting ? "Submitting..." : " Submit & Logout"}
+            {submitting ? "Submitting..." : "✅ Submit & Logout"}
           </button>
         </form>
       </div>
