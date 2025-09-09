@@ -1,0 +1,209 @@
+/* ==== GLOBAL THEME ==== */
+body {
+  font-family: 'Inter', 'Segoe UI', Tahoma, sans-serif;
+  background: linear-gradient(135deg, #1d3557, #457b9d, #a8dadc);
+  background-size: 400% 400%;
+  animation: gradientShift 12s ease infinite;
+  margin: 0;
+  padding: 0;
+  color: #222;
+}
+
+/* Gradient Animation */
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* ==== FORM CONTAINER ==== */
+.form-container {
+  max-width: 850px;
+  margin: 80px auto;
+  padding: 40px 50px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(18px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+  animation: fadeIn 1s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ==== FORM TITLE ==== */
+h2 {
+  text-align: center;
+  margin-bottom: 25px;
+  color: #1d3557;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+/* ==== LABEL ==== */
+label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #1d3557;
+  font-size: 15px;
+}
+
+/* ==== INPUT & TEXTAREA ==== */
+input[type="text"],
+input[type="email"],
+input[type="number"],
+input[type="file"],
+textarea,
+select {
+  width: 100%;
+  padding: 14px 16px;
+  font-size: 15px;
+  border-radius: 12px;
+  border: 1px solid rgba(0,0,0,0.1);
+  background: rgba(255,255,255,0.9);
+  color: #333;
+  margin-bottom: 18px;
+  outline: none;
+  transition: all 0.25s ease;
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.05);
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: #457b9d;
+  box-shadow: 0 0 8px rgba(69, 123, 157, 0.3);
+  background: #fff;
+}
+
+/* File Input */
+input[type="file"] {
+  padding: 10px;
+  border: 1px dashed #999;
+  cursor: pointer;
+  background: rgba(255,255,255,0.6);
+}
+
+input[type="file"]:hover {
+  border-color: #457b9d;
+}
+
+/* ==== CUSTOM SELECT ==== */
+select {
+  appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg fill='%23457b9d' height='20' viewBox='0 0 24 24' width='20' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 14px;
+}
+
+/* ==== BUTTON ==== */
+button,
+.btn {
+  width: 100%;
+  padding: 14px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(135deg, #1d3557, #457b9d);
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  margin-top: 12px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+button:hover,
+.btn:hover {
+  background: linear-gradient(135deg, #457b9d, #1d3557);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.2);
+}
+
+/* ==== TABLE (Preventive Section) ==== */
+.preventive-section {
+  margin-top: 25px;
+  padding: 20px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.7);
+  border: 1px solid rgba(0,0,0,0.05);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.section-title {
+  margin-bottom: 15px;
+  color: #1d3557;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.preventive-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 15px;
+}
+
+.preventive-table th,
+.preventive-table td {
+  border: 1px solid #ddd;
+  padding: 12px;
+  text-align: center;
+  font-size: 14px;
+}
+
+.preventive-table th {
+  background: #f1f5f9;
+  color: #1d3557;
+  font-weight: 600;
+}
+
+.note {
+  font-size: 13px;
+  color: #777;
+  margin-top: 8px;
+}
+
+/* ==== DROPDOWN (Fleet Suggestions) ==== */
+.dropdown {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+  margin-bottom: 20px;
+}
+
+.dropdown li {
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.dropdown li:hover {
+  background: #f1f5f9;
+  color: #1d3557;
+}
+
+/* ==== RESPONSIVE ==== */
+@media (max-width: 768px) {
+  .form-container {
+    padding: 25px;
+    margin: 30px 15px;
+  }
+
+  h2 {
+    font-size: 22px;
+  }
+
+  button {
+    font-size: 14px;
+  }
+}

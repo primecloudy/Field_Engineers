@@ -11,6 +11,7 @@ import MTC from "./pages/MTC";
 import SwitchPage from "./pages/Switch";
 import LogoutAttendance from "./pages/LogoutAttendance";
 import TNSTC from "./pages/TNSTC";
+import OGL from "./pages/OGL";
 
 // ✅ PrivateRoute for role-based protection
 const PrivateRoute = ({ children, role }) => {
@@ -77,6 +78,7 @@ function App() {
           <Route path="/TNSTC" element={<TNSTC />} />
           <Route path="/MTC" element={<MTC/>}/>
           <Route path="/switch" element={<SwitchPage />} />
+          <Route path="/OGL" element={<OGL />} />
 
           {/* Logout Attendance */}
           <Route path="/logoutattendance" element={<LogoutAttendance />} />

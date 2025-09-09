@@ -122,8 +122,19 @@ function Home() {
             </div>
             <div className="card-arrow">→</div>
           </Link>
+
+           <Link to="/OGL" className="card ogl-card">
+            <div className="card-icon">🚍</div>
+            <div className="card-content">
+              <h3>OGL</h3>
+              <p>Access OGL maintenance form</p>
+            </div>
+            <div className="card-arrow">→</div>
+          </Link>
         </div>
       </div>
+
+      
 
       {/* Footer */}
       <div className="home-footer">
