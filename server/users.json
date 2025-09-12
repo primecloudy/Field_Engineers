@@ -108,5 +108,15 @@
     "username": "PrimeEdge",
     "password": "#Pr!^^@2020",
     "role": "admin"
+  },
+  {
+    "username": "Alphino Alex",
+    "password": "Prime@143",
+    "role": "user"
+  },
+  {
+    "username": "Dhaudh Basha",
+    "password": "Prime@321",
+    "role": "user"
   }
 ]

@@ -204,6 +204,10 @@
   border-left: 4px solid #9b59b6;
 }
 
+.ogl-card {
+  border-left: 4px solid #59b6a2;
+}
+
 .switch-card:hover {
   border-left: 4px solid #8e44ad;
 }

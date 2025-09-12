@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import "./Attendance.css"; // 👈 new CSS file for styling
+import imageCompression from "browser-image-compression";
 
 const WEB_APP_URL =
   "https://script.google.com/macros/s/AKfycbyViRo8-yTqT-d2Nf2G7JEvzyp0Ty2vNh5ksCYqvW3EOlIVkML7rSl_94Qrjb0gsqJzjQ/exec";
@@ -61,7 +62,7 @@ const Attendance = () => {
     }
   };
 
-  const handleSubmit = async (e) => {
+ const handleSubmit = async (e) => {
   e.preventDefault();
 
   if (!photo) {
@@ -75,8 +76,16 @@ const Attendance = () => {
 
   try {
     setSubmitting(true);
+
+    // 👉 Compress photo before converting to base64
+    const compressedFile = await imageCompression(photo, {
+      maxSizeMB: 0.3, // ~300 KB
+      maxWidthOrHeight: 800, // resize large photos
+      useWebWorker: true,
+    });
+
     const reader = new FileReader();
-    reader.readAsDataURL(photo);
+    reader.readAsDataURL(compressedFile);
 
     reader.onloadend = async () => {
       const base64Data = reader.result.split(",")[1];
@@ -88,12 +97,10 @@ const Attendance = () => {
         timestamp: new Date().toISOString(),
       };
 
-   const res = await fetch(WEB_APP_URL, {
-  method: "POST",
-  // headers: { "Content-Type": "application/json" },
-  body: JSON.stringify(payload),
-});
-
+      const res = await fetch(WEB_APP_URL, {
+        method: "POST",
+        body: JSON.stringify(payload),
+      });
 
       const result = await res.json();
       console.log("✅ GAS Response:", result);

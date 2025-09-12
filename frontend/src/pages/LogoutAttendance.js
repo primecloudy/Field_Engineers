@@ -3,6 +3,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import "./LogoutAttendance.css";
+import imageCompression from "browser-image-compression"; 
 
 const WEB_APP_URL =
   "https://script.google.com/macros/s/AKfycby5szY6aVvOjdFO2RtsxQS9EEx2SnNwyY_ExbMHmmd4YXEFe0U3DN72ZE_UEr5-nKPPlg/exec";
@@ -58,58 +59,68 @@ const LogoutAttendance = () => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!photo) {
-      alert("⚠️ Please upload your photo!");
-      return;
-    }
-    if (!location.lat || !location.lng) {
-      alert("⚠️ Location is mandatory!");
-      return;
-    }
+  e.preventDefault();
 
-    try {
-      setSubmitting(true);
-      const reader = new FileReader();
-      reader.readAsDataURL(photo);
+  if (!photo) {
+    alert("⚠️ Please upload your photo!");
+    return;
+  }
+  if (!location.lat || !location.lng) {
+    alert("⚠️ Location is mandatory!");
+    return;
+  }
 
-      reader.onloadend = async () => {
-        const base64Data = reader.result.split(",")[1]; // only base64, no prefix
+  try {
+    setSubmitting(true);
 
-        const payload = {
-          engineerName,
-          location: `${location.lat}, ${location.lng}`,
-          photo: base64Data,
-          timestamp: new Date().toISOString(), // 👈 send timestamp
-        };
+    // 👉 Compress before converting
+    const compressedFile = await imageCompression(photo, {
+      maxSizeMB: 0.3, // ~300 KB
+      maxWidthOrHeight: 800, // scale large images
+      useWebWorker: true,
+    });
 
-        const res = await fetch(WEB_APP_URL, {
-          method: "POST",
-          body: JSON.stringify(payload),
-        });
+    const reader = new FileReader();
+    reader.readAsDataURL(compressedFile);
 
-        const result = await res.json();
-        console.log("✅ GAS Response:", result);
+    reader.onloadend = async () => {
+      const base64Data = reader.result.split(",")[1];
 
-        if (result.status === "success") {
-          alert(
-            `✅ Logout attendance submitted!\n🕒 Time: ${result.timestamp}\n📸 Photo: ${result.photoUrl}`
-          );
-        } else {
-          alert("❌ Error: " + result.message);
-        }
-
-        setUser(null);
-        localStorage.removeItem("user");
-        localStorage.removeItem("attendanceDone");
-        setAttendanceDone(false);
-        navigate("/login");
+      const payload = {
+        engineerName,
+        location: `${location.lat}, ${location.lng}`,
+        photo: base64Data,
+        timestamp: new Date().toISOString(),
       };
-    } catch (err) {
-      alert("❌ Error submitting: " + err.message);
-      setSubmitting(false);
-    }
-  };
+
+      const res = await fetch(WEB_APP_URL, {
+        method: "POST",
+        body: JSON.stringify(payload),
+      });
+
+      const result = await res.json();
+      console.log("✅ GAS Response:", result);
+
+      if (result.status === "success") {
+        alert(
+          `✅ Logout attendance submitted!\n🕒 Time: ${result.timestamp}\n📸 Photo: ${result.photoUrl}`
+        );
+      } else {
+        alert("❌ Error: " + result.message);
+      }
+
+      // Reset session
+      setUser(null);
+      localStorage.removeItem("user");
+      localStorage.removeItem("attendanceDone");
+      setAttendanceDone(false);
+      navigate("/login");
+    };
+  } catch (err) {
+    alert("❌ Error submitting: " + err.message);
+    setSubmitting(false);
+  }
+};
 
   // Format date/time for UI
   const formattedDate = currentDateTime.toLocaleDateString("en-US", {
@@ -128,7 +139,7 @@ const LogoutAttendance = () => {
   return (
     <div className="logout-page">
       <div className="logout-card">
-        <h2 className="logout-title">🚪 Logout Attendance</h2>
+        <h2 className="logout-title"> Logout Attendance</h2>
 
         {/* 👇 Date & Time */}
         <div className="datetime-display">

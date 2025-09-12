@@ -29,6 +29,7 @@ function Home() {
 
   return (
     <div className="home-container">
+      
       {/* Header */}
       <div className="home-header">
         <div className="header-content">

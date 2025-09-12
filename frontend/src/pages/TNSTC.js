@@ -348,6 +348,7 @@ function TNSTC() {
             name="imeiNumber"
             value={formData.imeiNumber}
             onChange={handleChange}
+            required
           />
         </div>
 
