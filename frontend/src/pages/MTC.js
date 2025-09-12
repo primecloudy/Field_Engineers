@@ -223,7 +223,7 @@ const handleSelectFleet = (fleet) => {
     console.log("Submitting payload:", payload);
 
     // Send to Google Apps Script
-    const scriptURL = "https://script.google.com/macros/s/AKfycbzELmQD5U7_m4p9EwmbGhHTElLNXj3QElPy7Y8VsldPzF57ld4pc761pkgDr0bpvumVEw/exec";
+    const scriptURL = "https://script.google.com/macros/s/AKfycbx_S6M2-R_6mU718ZES7vBgRgpSf_5keR9cKLtoqP0yPJfIp1dtD9X9V3Y65NZBHg7FNg/exec";
     
     const response = await fetch(scriptURL, {
       method: "POST",
@@ -367,6 +367,7 @@ const handleSelectFleet = (fleet) => {
     name="imeiNumber"
     value={formData.imeiNumber}
     onChange={handleChange}
+    required
     // This field is editable as requested
   />
 </div>

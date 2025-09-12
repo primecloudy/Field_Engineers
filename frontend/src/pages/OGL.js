@@ -188,7 +188,7 @@ function OGL() {
 
       // Send to Google Apps Script
       const response = await fetch(
-        "https://script.google.com/macros/s/AKfycbwoF8FBUij5FFSWQJHdp-8VpFl-HdHtgatSi1N3ARf3les6t9_7aavLug1kFicBK3oy/exec",
+        "https://script.google.com/macros/s/AKfycbybWjvEbWI7WPt-42bNapnkdrVi3wqvRHpoeFcOoS8_nHqhVsCqXpQOBq9wFaSMT1QeRw/exec",
         {
           method: "POST",
           body: JSON.stringify(payload),
@@ -308,6 +308,7 @@ function OGL() {
             type="text"
             value={formData.imeiNumber}
             onChange={(e) => setFormData((prev) => ({ ...prev, imeiNumber: e.target.value }))}
+            required
           />
         </div>
 

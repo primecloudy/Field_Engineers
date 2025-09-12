@@ -230,7 +230,7 @@ function TNSTC() {
 
       // Send to Google Apps Script (replace with your TNSTC endpoint)
       const response = await fetch(
-        "https://script.google.com/macros/s/AKfycbw9op9Jl7UjYy4t7gxBCazWXs7phEuvb9MWEfiovtUkMd_mQ9TXZXQJU01v4LuaKSFcYA/exec",
+        "https://script.google.com/macros/s/AKfycbzpLs8HCEQGGlY_hTDtsSp5Ob1ZA8jRIxMu3IdSFob6lP5JYI8HlUBWZ9MWtTkWAj4L/exec",
         {
           method: "POST",
           

@@ -144,7 +144,7 @@ const handleSubmit = async (e) => {
     console.log("Payload prepared:", payload);
 
     // ✅ REPLACE WITH YOUR ACTUAL GOOGLE APPS SCRIPT URL
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbziVp2voXhBuVPfnv0WV8SNSSiRwnwQ-256jUc33kZSXrsBR5VtyZq0ixfki8yVYIg2rw/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwRi4E7S4znsRhWDSyO8tu6X2nE98t2Se2lo1kpKqanT_AwPYou-R7URfoKVXfE82H-rg/exec";
     
     const response = await fetch(SCRIPT_URL, {
       method: "POST",

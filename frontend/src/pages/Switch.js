@@ -188,7 +188,7 @@ function SwitchPage() {
 
       // Send to Google Apps Script
       const response = await fetch(
-        "https://script.google.com/macros/s/AKfycbxBM-XOLrZKpKMIThNDVQ6N7iSnIaOLh_l3jpRTJkxHDnsapqMfwLoFeLPIoUyQCGtl4w/exec",
+        "https://script.google.com/macros/s/AKfycbz1naaaaRxDinZgfmavtcS9eio1EOsCJV3eKU4T77ajkXDL8f1-NiKnbFMqcS0MdE_ZgQ/exec",
         {
           method: "POST",
           body: JSON.stringify(payload),
@@ -308,6 +308,7 @@ function SwitchPage() {
             type="text"
             value={formData.imeiNumber}
             onChange={(e) => setFormData((prev) => ({ ...prev, imeiNumber: e.target.value }))}
+            required
           />
         </div>
 
