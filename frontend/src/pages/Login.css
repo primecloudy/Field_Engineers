@@ -156,10 +156,10 @@
 .company-name {
   font-size: 1.5rem;
   font-weight: bold;
-  color: #fff;
+  color: #37aee6;
   letter-spacing: 1px;
   text-transform: uppercase;
-  background: linear-gradient(90deg, #ff8a00, #e52e71, #6a11cb, #2575fc);
+  /* background: linear-gradient(90deg, #ff8a00, #e52e71, #6a11cb, #2575fc);
   -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  -webkit-text-fill-color: transparent; */
 }
