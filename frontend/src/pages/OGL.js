@@ -192,7 +192,7 @@ function OGL() {
         {
           method: "POST",
           body: JSON.stringify(payload),
-        }   
+        }
       );
 
       if (!response.ok) throw new Error("Failed to submit form");
@@ -251,7 +251,7 @@ function OGL() {
         </div>
 
         {/* Fleet Number */}
-        <div className="form-group" style={{position: 'relative'}}>
+        <div className="form-group" style={{ position: 'relative' }}>
           <label>Fleet Number:</label>
           <input
             type="text"
@@ -277,8 +277,8 @@ function OGL() {
               listStyle: 'none'
             }}>
               {filteredFleets.map((fleet, index) => (
-                <li 
-                  key={index} 
+                <li
+                  key={index}
                   onClick={() => handleSelectFleet(fleet)}
                   style={{
                     padding: '8px 12px',
@@ -298,8 +298,16 @@ function OGL() {
         {/* Depot */}
         <div className="form-group">
           <label>Depot:</label>
-          <input type="text" value={formData.depo} readOnly style={{backgroundColor: '#f5f5f5'}} />
+          <input
+            type="text"
+            name="depo"
+            value={formData.depo}
+            onChange={handleChange}
+            placeholder="Enter Depot Name"
+            required
+          />
         </div>
+
 
         {/* IMEI Number */}
         <div className="form-group">
@@ -425,7 +433,7 @@ function OGL() {
                     required
                   />
                 </div>
-                
+
                 <div className="form-group">
                   <label>Part Failure:</label>
                   <Select
@@ -454,7 +462,7 @@ function OGL() {
                     required
                   />
                 </div>
-                
+
                 <div className="form-group">
                   <label>Problem Description:</label>
                   <textarea
@@ -464,7 +472,7 @@ function OGL() {
                     required
                   ></textarea>
                 </div>
-                
+
                 <div className="form-group">
                   <label>Action Taken:</label>
                   <textarea
@@ -474,7 +482,7 @@ function OGL() {
                     required
                   ></textarea>
                 </div>
-                
+
                 {/* ✅ Changed Required Spares to multi-select dropdown */}
                 <div className="form-group">
                   <label>Required Spares:</label>
@@ -509,17 +517,8 @@ function OGL() {
                     required
                   ></textarea>
                 </div>
-                
-                <div className="form-group">
-                  <label>E-SIM ID:</label>
-                  <input
-                    type="text"
-                    name="esimId"
-                    value={formData.esimId}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
+
+              
 
                 <div className="form-group">
                   <label>System Diagnostics:</label>
@@ -530,7 +529,7 @@ function OGL() {
                     required
                   />
                 </div>
-                
+
                 <div className="form-group">
                   <label>Device Information:</label>
                   <input
@@ -575,7 +574,7 @@ function OGL() {
                     required
                   />
                 </div>
-                
+
                 <div className="form-group">
                   <label>Part Failure:</label>
                   <Select
@@ -604,7 +603,7 @@ function OGL() {
                     required
                   />
                 </div>
-                
+
                 <div className="form-group">
                   <label>Problem Description:</label>
                   <textarea
@@ -614,7 +613,7 @@ function OGL() {
                     required
                   ></textarea>
                 </div>
-                
+
                 <div className="form-group">
                   <label>Action Taken:</label>
                   <textarea
@@ -624,7 +623,7 @@ function OGL() {
                     required
                   ></textarea>
                 </div>
-                
+
                 {/* ✅ Changed Required Spares to multi-select dropdown */}
                 <div className="form-group">
                   <label>Required Spares:</label>
@@ -658,17 +657,8 @@ function OGL() {
                     required
                   ></textarea>
                 </div>
-                
-                <div className="form-group">
-                  <label>E-SIM ID:</label>
-                  <input
-                    type="text"
-                    name="esimId"
-                    value={formData.esimId}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
+
+              
 
                 <div className="form-group">
                   <label>System Diagnostics:</label>
@@ -679,7 +669,7 @@ function OGL() {
                     required
                   />
                 </div>
-                
+
                 <div className="form-group">
                   <label>Device Information:</label>
                   <input
@@ -753,7 +743,7 @@ function OGL() {
                     required
                   />
                 </div>
-                
+
                 <div className="form-group">
                   <label>Part Failure:</label>
                   <Select
@@ -782,7 +772,7 @@ function OGL() {
                     required
                   />
                 </div>
-                
+
                 <div className="form-group">
                   <label>Problem Description:</label>
                   <textarea
@@ -792,7 +782,7 @@ function OGL() {
                     required
                   ></textarea>
                 </div>
-                
+
                 <div className="form-group">
                   <label>Action Taken:</label>
                   <textarea
@@ -802,7 +792,7 @@ function OGL() {
                     required
                   ></textarea>
                 </div>
-                
+
                 {/* ✅ Changed Required Spares to multi-select dropdown */}
                 <div className="form-group">
                   <label>Required Spares:</label>
@@ -836,17 +826,8 @@ function OGL() {
                     required
                   ></textarea>
                 </div>
-                
-                <div className="form-group">
-                  <label>E-SIM ID:</label>
-                  <input
-                    type="text"
-                    name="esimId"
-                    value={formData.esimId}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
+
+              
 
                 <div className="form-group">
                   <label>System Diagnostics:</label>
@@ -857,7 +838,7 @@ function OGL() {
                     required
                   />
                 </div>
-                
+
                 <div className="form-group">
                   <label>Device Information:</label>
                   <input

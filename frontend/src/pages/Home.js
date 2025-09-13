@@ -2,6 +2,7 @@ import React, { useContext, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import "./Home.css";
+import homevideo from "../assets/homevideo.mp4";
 
 function Home() {
   const { user } = useContext(AuthContext);
@@ -29,6 +30,14 @@ function Home() {
 
   return (
     <div className="home-container">
+      {/* 🔹 Background Video */}
+      <video autoPlay loop muted playsInline className="background-video">
+        <source src={homevideo} type="video/mp4" />
+        Your browser does not support the video tag.
+      </video>
+
+      {/* Overlay (to make text readable) */}
+      <div className="overlay"></div>
       
       {/* Header */}
       <div className="home-header">
