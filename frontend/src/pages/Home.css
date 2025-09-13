@@ -64,12 +64,16 @@
 }
 
 .username {
-  font-weight: 600;
-  font-size: 1rem;
+  font-weight: 800;
+  font-size: 1.5rem;
+  color: white;
+  background: linear-gradient(90deg, #e28c2a, #fa3d82, #a368e2, #739ee7);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .user-role {
-  font-size: 0.8rem;
+  font-size: 1.1rem;
   opacity: 0.8;
 }
 

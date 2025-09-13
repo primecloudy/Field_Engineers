@@ -1,6 +1,9 @@
 import React, { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
+import "./Login.css";
+import primeLogo from "../assets/primeedge.png";
+import bgImage from "../assets/bus.png";
 
 const Login = () => {
   const [credentials, setCredentials] = useState({ username: "", password: "" });
@@ -46,34 +49,51 @@ const handleLogin = async (e) => {
 
 
 
-  return (
-    <div className="container mt-5">
-      <h2 className="text-center">Login</h2>
-      <form onSubmit={handleLogin} className="card p-4 shadow-lg mt-3">
-        <input
-          type="text"
-          className="form-control mb-3"
-          placeholder="Username"
-          value={credentials.username}
-          onChange={(e) =>
-            setCredentials({ ...credentials, username: e.target.value })
-          }
-        />
-        <input
-          type="password"
-          className="form-control mb-3"
-          placeholder="Password"
-          value={credentials.password}
-          onChange={(e) =>
-            setCredentials({ ...credentials, password: e.target.value })
-          }
-        />
-        <button type="submit" className="btn btn-primary">
-          Login
-        </button>
-      </form>
-    </div>
-  );
+ return (
+  <div
+  className="login-wrapper"
+  style={{
+    backgroundImage: `url(${bgImage})`,
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    backgroundRepeat: "no-repeat",
+  }}
+>
+    
+    <form onSubmit={handleLogin} className="glass-card">
+      {/* Company Logo & Name */}
+      <div className="company-header">
+        <img src={primeLogo} alt="Company Logo" className="company-logo" />
+        <h2 className="company-name">Prime Edge Info Solutions Pvt Ltd</h2>
+      </div>
+
+     
+
+      <input
+        type="text"
+        className="glass-input"
+        placeholder="Username"
+        value={credentials.username}
+        onChange={(e) =>
+          setCredentials({ ...credentials, username: e.target.value })
+        }
+      />
+      <input
+        type="password"
+        className="glass-input"
+        placeholder="Password"
+        value={credentials.password}
+        onChange={(e) =>
+          setCredentials({ ...credentials, password: e.target.value })
+        }
+      />
+      <button type="submit" className="glass-btn">
+        Login
+      </button>
+    </form>
+  </div>
+);
+
 };
 
 export default Login;

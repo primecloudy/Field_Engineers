@@ -55,7 +55,7 @@ function Home() {
           <div className="logo-section">
             <div className="logo">
               <span className="logo-icon"></span>
-              <h1 className="title">Prime Edge</h1>
+              <h1 className="title">Prime Edge Info Solutions Pvt Ltd</h1>
             </div>
             <p className="tagline">Maintenance Management System</p>
           </div>

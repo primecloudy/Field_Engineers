@@ -4,10 +4,9 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background: linear-gradient(-45deg, #1d2b64, #f8cdda, #36d1dc, #5b86e5);
-  background-size: 400% 400%;
-  animation: gradientBG 12s ease infinite;
+
 }
+
 
 @keyframes gradientBG {
   0% { background-position: 0% 50%; }
@@ -21,7 +20,7 @@
   border-radius: 18px;
   padding: 2.5rem;
   width: 380px;
-  backdrop-filter: blur(12px);
+  backdrop-filter: blur(6px);
   border: 1px solid rgba(255, 255, 255, 0.25);
   box-shadow: 0 0 25px rgba(0, 0, 0, 0.4);
   text-align: center;
@@ -76,23 +75,25 @@
   margin: 10px 0;
   padding: 12px 14px;
   border-radius: 10px;
-  border: 1px solid rgba(255,255,255,0.3);
-  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(245, 245, 245, 0.3);
+  background: rgba(255, 252, 252, 0.1);
   color: #fff;
   font-size: 1rem;
   outline: none;
-  transition: 0.3s ease;
+  transition: 0.1s ease;
   opacity: 0;
-  animation: fadeSlideUp 0.8s ease forwards;
+  animation: fadeSlideUp 0.4s ease forwards;
+  
 }
 
 .glass-input:nth-of-type(1) { animation-delay: 1.2s; }
-.glass-input:nth-of-type(2) { animation-delay: 1.6s; }
+.glass-input:nth-of-type(2) { animation-delay: 1.5s; }
+.glass-input::placeholder { color: rgb(19, 19, 19); }
 
 .glass-input:focus {
   border-color: #00ffe7;
-  box-shadow: 0 0 10px #00ffe7;
-  background: rgba(255,255,255,0.15);
+  box-shadow: 0 0 10px #9eacaa;
+  background: rgba(252, 244, 244, 0.76);
 }
 
 /* Button */
@@ -111,10 +112,54 @@
   transition: all 0.3s ease;
   opacity: 0;
   animation: fadeSlideUp 0.8s ease forwards;
-  animation-delay: 3s;
+  animation-delay: 1.9s;
 }
 
 .glass-btn:hover {
   transform: scale(1.05);
-  box-shadow: 0 0 25px rgba(91,134,229,0.9);
+  box-shadow: 0 0 25px rgba(231, 232, 233, 0.9);
+}
+.company-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.company-logo {
+  width: 120px;           /* larger for visibility */
+  height: auto;           /* keeps aspect ratio */
+  margin-bottom: 15px;
+  display: block;
+
+  /* Glow effect */
+  filter: drop-shadow(0 0 12px rgba(91, 134, 229, 0.8))
+          drop-shadow(0 0 24px rgba(54, 209, 220, 0.6));
+
+  /* Smooth animation */
+  animation: floatLogo 4s ease-in-out infinite;
+  transition: transform 0.3s ease, filter 0.3s ease;
+}
+
+.company-logo:hover {
+  transform: scale(1.1) rotate(3deg); /* zoom + tilt */
+  filter: drop-shadow(0 0 20px rgba(255, 138, 0, 0.9))
+          drop-shadow(0 0 30px rgba(229, 46, 113, 0.7));
+}
+
+@keyframes floatLogo {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+
+.company-name {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #fff;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  background: linear-gradient(90deg, #ff8a00, #e52e71, #6a11cb, #2575fc);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
