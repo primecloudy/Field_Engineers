@@ -67,7 +67,7 @@ const handleLogin = async (e) => {
         <h2 className="company-name">Prime Edge Info Solutions Pvt Ltd</h2>
       </div>
 
-     
+     {/* ........ */}
 
       <input
         type="text"
