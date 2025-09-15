@@ -333,10 +333,13 @@ function TNSTC() {
         {/* Depot */}
         <div className="form-group">
           <label>Depot:</label>
-          <input 
-            type="text" 
-            value={formData.depo} 
-            readOnly 
+          <input
+            type="text"
+            name="depo"
+            value={formData.depo}
+            onChange={handleChange}   // ✅ allow typing
+            placeholder="Enter Depot Name"
+            required
           />
         </div>
 

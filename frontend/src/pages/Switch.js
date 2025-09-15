@@ -188,7 +188,7 @@ function SwitchPage() {
 
       // Send to Google Apps Script
       const response = await fetch(
-        "https://script.google.com/macros/s/AKfycbz1naaaaRxDinZgfmavtcS9eio1EOsCJV3eKU4T77ajkXDL8f1-NiKnbFMqcS0MdE_ZgQ/exec",
+        "https://script.google.com/macros/s/AKfycbzw4ELzjhTrMl_bMbtyQkxigoRCkTCYusZkErn6S-jnY5prwNLBEz6CVup_7c8wykezSw/exec",
         {
           method: "POST",
           body: JSON.stringify(payload),
@@ -298,7 +298,14 @@ function SwitchPage() {
         {/* Depot */}
         <div className="form-group">
           <label>Depot:</label>
-          <input type="text" value={formData.depo} readOnly style={{backgroundColor: '#f5f5f5'}} />
+          <input
+            type="text"
+            name="depo"
+            value={formData.depo}
+            onChange={handleChange}   // ✅ allow typing
+            placeholder="Enter Depot Name"
+            required
+          />
         </div>
 
         {/* IMEI Number */}
