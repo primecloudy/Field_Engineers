@@ -27,7 +27,7 @@ function Home() {
     alert("Validate my data clicked!");
     // Add validation logic here
   };
-
+// .....
   return (
     <div className="home-container">
       {/* 🔹 Background Video */}
