@@ -30,6 +30,12 @@ function SwitchPage() {
     updatesFile: null,
     preventiveSection: {},
     imeiNumber: "",
+    // 🔽 New fields
+    technicalSupport: "",
+    tampering: "",
+    tamperingImage: null,
+    missingComponents: [],
+    replacedComponents: [],
   });
   const [submitting, setSubmitting] = useState(false);
 
@@ -172,6 +178,7 @@ function SwitchPage() {
       const diagnosticsFile = await toBase64(formData.diagnosticsFile);
       const deviceInfoFile = await toBase64(formData.deviceInfoFile);
       const updatesFile = await toBase64(formData.updatesFile);
+      const tamperingImage = await toBase64(formData.tamperingImage);
 
       // Prepare payload
       const payload = {
@@ -181,18 +188,21 @@ function SwitchPage() {
         diagnosticsFile,
         deviceInfoFile,
         updatesFile,
+        tamperingImage, // ✅ add tampering file
         partFailure: formData.partFailure || [],
-        requiredSpares: formData.requiredSpares || [], // ✅ Now an array
+        requiredSpares: formData.requiredSpares || [],
+        missingComponents: formData.missingComponents || [],
+        replacedComponents: formData.replacedComponents || [],
         preventiveSection: formData.preventiveSection || {}
       };
 
       // Send to Google Apps Script
       const response = await fetch(
-        "https://script.google.com/macros/s/AKfycbzw4ELzjhTrMl_bMbtyQkxigoRCkTCYusZkErn6S-jnY5prwNLBEz6CVup_7c8wykezSw/exec",
+        "https://script.google.com/macros/s/AKfycbx8FDtWvaVGYac1o_THH4E1sYYdY3b7xgjBxzdAu2LEBtEOKhWCVeMkaBZeAz9hZvoqLA/exec",
         {
           method: "POST",
           body: JSON.stringify(payload),
-        }   
+        }
       );
 
       if (!response.ok) throw new Error("Failed to submit form");
@@ -224,6 +234,11 @@ function SwitchPage() {
         updatesFile: null,
         preventiveSection: {},
         imeiNumber: "",
+        technicalSupport: "",
+        tampering: "",
+        tamperingImage: null,
+        missingComponents: [],
+        replacedComponents: [],
       });
 
     } catch (error) {
@@ -251,7 +266,7 @@ function SwitchPage() {
         </div>
 
         {/* Fleet Number */}
-        <div className="form-group" style={{position: 'relative'}}>
+        <div className="form-group" style={{ position: 'relative' }}>
           <label>Fleet Number:</label>
           <input
             type="text"
@@ -277,8 +292,8 @@ function SwitchPage() {
               listStyle: 'none'
             }}>
               {filteredFleets.map((fleet, index) => (
-                <li 
-                  key={index} 
+                <li
+                  key={index}
                   onClick={() => handleSelectFleet(fleet)}
                   style={{
                     padding: '8px 12px',
@@ -432,7 +447,7 @@ function SwitchPage() {
                     required
                   />
                 </div>
-                
+
                 <div className="form-group">
                   <label>Part Failure:</label>
                   <Select
@@ -461,7 +476,7 @@ function SwitchPage() {
                     required
                   />
                 </div>
-                
+
                 <div className="form-group">
                   <label>Problem Description:</label>
                   <textarea
@@ -471,7 +486,7 @@ function SwitchPage() {
                     required
                   ></textarea>
                 </div>
-                
+
                 <div className="form-group">
                   <label>Action Taken:</label>
                   <textarea
@@ -481,7 +496,7 @@ function SwitchPage() {
                     required
                   ></textarea>
                 </div>
-                
+
                 {/* ✅ Changed Required Spares to multi-select dropdown */}
                 <div className="form-group">
                   <label>Required Spares:</label>
@@ -516,7 +531,7 @@ function SwitchPage() {
                     required
                   ></textarea>
                 </div>
-                
+
                 <div className="form-group">
                   <label>E-SIM ID:</label>
                   <input
@@ -537,7 +552,7 @@ function SwitchPage() {
                     required
                   />
                 </div>
-                
+
                 <div className="form-group">
                   <label>Device Information:</label>
                   <input
@@ -547,6 +562,109 @@ function SwitchPage() {
                     required
                   />
                 </div>
+                {/* Technical Support Required */}
+                <div className="form-group">
+                  <label>Technical Support Required:</label><br />
+                  <label>
+                    <input
+                      type="radio"
+                      name="technicalSupport"
+                      value="No"
+                      checked={formData.technicalSupport === "No"}
+                      onChange={handleChange}
+                      required
+                    /> No
+                  </label>
+                  <label style={{ marginLeft: "20px" }}>
+                    <input
+                      type="radio"
+                      name="technicalSupport"
+                      value="Yes"
+                      checked={formData.technicalSupport === "Yes"}
+                      onChange={handleChange}
+                      required
+                    /> Yes
+                  </label>
+                </div>
+
+                {/* Tampering Happened */}
+                <div className="form-group">
+                  <label>Tampering Happened:</label><br />
+                  <label>
+                    <input
+                      type="radio"
+                      name="tampering"
+                      value="No"
+                      checked={formData.tampering === "No"}
+                      onChange={handleChange}
+                      required
+                    /> No
+                  </label>
+                  <label style={{ marginLeft: "20px" }}>
+                    <input
+                      type="radio"
+                      name="tampering"
+                      value="Yes"
+                      checked={formData.tampering === "Yes"}
+                      onChange={handleChange}
+                      required
+                    /> Yes
+                  </label>
+                </div>
+
+                {/* Extra fields only if tampering = Yes */}
+                {formData.tampering === "Yes" && (
+                  <>
+                    <div className="form-group">
+                      <label>Tampering Image:</label>
+                      <input
+                        type="file"
+                        name="tamperingImage"
+                        onChange={handleChange}
+                        required
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label>Missing Components:</label>
+                      <Select
+                        isMulti
+                        name="missingComponents"
+                        options={partFailureOptions}
+                        value={partFailureOptions.filter((opt) =>
+                          (formData.missingComponents || []).includes(opt.value)
+                        )}
+                        onChange={(selected) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            missingComponents: selected ? selected.map((s) => s.value) : [],
+                          }))
+                        }
+                        placeholder="Select missing components"
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label>Replaced Components:</label>
+                      <Select
+                        isMulti
+                        name="replacedComponents"
+                        options={partFailureOptions}
+                        value={partFailureOptions.filter((opt) =>
+                          (formData.replacedComponents || []).includes(opt.value)
+                        )}
+                        onChange={(selected) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            replacedComponents: selected ? selected.map((s) => s.value) : [],
+                          }))
+                        }
+                        placeholder="Select replaced components"
+                      />
+                    </div>
+                  </>
+                )}
+
               </>
             )}
           </>
@@ -582,7 +700,7 @@ function SwitchPage() {
                     required
                   />
                 </div>
-                
+
                 <div className="form-group">
                   <label>Part Failure:</label>
                   <Select
@@ -611,7 +729,7 @@ function SwitchPage() {
                     required
                   />
                 </div>
-                
+
                 <div className="form-group">
                   <label>Problem Description:</label>
                   <textarea
@@ -621,7 +739,7 @@ function SwitchPage() {
                     required
                   ></textarea>
                 </div>
-                
+
                 <div className="form-group">
                   <label>Action Taken:</label>
                   <textarea
@@ -631,7 +749,7 @@ function SwitchPage() {
                     required
                   ></textarea>
                 </div>
-                
+
                 {/* ✅ Changed Required Spares to multi-select dropdown */}
                 <div className="form-group">
                   <label>Required Spares:</label>
@@ -665,7 +783,7 @@ function SwitchPage() {
                     required
                   ></textarea>
                 </div>
-                
+
                 <div className="form-group">
                   <label>E-SIM ID:</label>
                   <input
@@ -686,7 +804,7 @@ function SwitchPage() {
                     required
                   />
                 </div>
-                
+
                 <div className="form-group">
                   <label>Device Information:</label>
                   <input
@@ -696,6 +814,108 @@ function SwitchPage() {
                     required
                   />
                 </div>
+                {/* Technical Support Required */}
+                <div className="form-group">
+                  <label>Technical Support Required:</label><br />
+                  <label>
+                    <input
+                      type="radio"
+                      name="technicalSupport"
+                      value="No"
+                      checked={formData.technicalSupport === "No"}
+                      onChange={handleChange}
+                      required
+                    /> No
+                  </label>
+                  <label style={{ marginLeft: "20px" }}>
+                    <input
+                      type="radio"
+                      name="technicalSupport"
+                      value="Yes"
+                      checked={formData.technicalSupport === "Yes"}
+                      onChange={handleChange}
+                      required
+                    /> Yes
+                  </label>
+                </div>
+
+                {/* Tampering Happened */}
+                <div className="form-group">
+                  <label>Tampering Happened:</label><br />
+                  <label>
+                    <input
+                      type="radio"
+                      name="tampering"
+                      value="No"
+                      checked={formData.tampering === "No"}
+                      onChange={handleChange}
+                      required
+                    /> No
+                  </label>
+                  <label style={{ marginLeft: "20px" }}>
+                    <input
+                      type="radio"
+                      name="tampering"
+                      value="Yes"
+                      checked={formData.tampering === "Yes"}
+                      onChange={handleChange}
+                      required
+                    /> Yes
+                  </label>
+                </div>
+
+                {/* Extra fields only if tampering = Yes */}
+                {formData.tampering === "Yes" && (
+                  <>
+                    <div className="form-group">
+                      <label>Tampering Image:</label>
+                      <input
+                        type="file"
+                        name="tamperingImage"
+                        onChange={handleChange}
+                        required
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label>Missing Components:</label>
+                      <Select
+                        isMulti
+                        name="missingComponents"
+                        options={partFailureOptions}
+                        value={partFailureOptions.filter((opt) =>
+                          (formData.missingComponents || []).includes(opt.value)
+                        )}
+                        onChange={(selected) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            missingComponents: selected ? selected.map((s) => s.value) : [],
+                          }))
+                        }
+                        placeholder="Select missing components"
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label>Replaced Components:</label>
+                      <Select
+                        isMulti
+                        name="replacedComponents"
+                        options={partFailureOptions}
+                        value={partFailureOptions.filter((opt) =>
+                          (formData.replacedComponents || []).includes(opt.value)
+                        )}
+                        onChange={(selected) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            replacedComponents: selected ? selected.map((s) => s.value) : [],
+                          }))
+                        }
+                        placeholder="Select replaced components"
+                      />
+                    </div>
+                  </>
+                )}
               </>
             )}
           </>
@@ -760,7 +980,7 @@ function SwitchPage() {
                     required
                   />
                 </div>
-                
+
                 <div className="form-group">
                   <label>Part Failure:</label>
                   <Select
@@ -789,7 +1009,7 @@ function SwitchPage() {
                     required
                   />
                 </div>
-                
+
                 <div className="form-group">
                   <label>Problem Description:</label>
                   <textarea
@@ -799,7 +1019,7 @@ function SwitchPage() {
                     required
                   ></textarea>
                 </div>
-                
+
                 <div className="form-group">
                   <label>Action Taken:</label>
                   <textarea
@@ -809,7 +1029,7 @@ function SwitchPage() {
                     required
                   ></textarea>
                 </div>
-                
+
                 {/* ✅ Changed Required Spares to multi-select dropdown */}
                 <div className="form-group">
                   <label>Required Spares:</label>
@@ -843,7 +1063,7 @@ function SwitchPage() {
                     required
                   ></textarea>
                 </div>
-                
+
                 <div className="form-group">
                   <label>E-SIM ID:</label>
                   <input
@@ -864,7 +1084,7 @@ function SwitchPage() {
                     required
                   />
                 </div>
-                
+
                 <div className="form-group">
                   <label>Device Information:</label>
                   <input
@@ -874,6 +1094,108 @@ function SwitchPage() {
                     required
                   />
                 </div>
+                {/* Technical Support Required */}
+                <div className="form-group">
+                  <label>Technical Support Required:</label><br />
+                  <label>
+                    <input
+                      type="radio"
+                      name="technicalSupport"
+                      value="No"
+                      checked={formData.technicalSupport === "No"}
+                      onChange={handleChange}
+                      required
+                    /> No
+                  </label>
+                  <label style={{ marginLeft: "20px" }}>
+                    <input
+                      type="radio"
+                      name="technicalSupport"
+                      value="Yes"
+                      checked={formData.technicalSupport === "Yes"}
+                      onChange={handleChange}
+                      required
+                    /> Yes
+                  </label>
+                </div>
+
+                {/* Tampering Happened */}
+                <div className="form-group">
+                  <label>Tampering Happened:</label><br />
+                  <label>
+                    <input
+                      type="radio"
+                      name="tampering"
+                      value="No"
+                      checked={formData.tampering === "No"}
+                      onChange={handleChange}
+                      required
+                    /> No
+                  </label>
+                  <label style={{ marginLeft: "20px" }}>
+                    <input
+                      type="radio"
+                      name="tampering"
+                      value="Yes"
+                      checked={formData.tampering === "Yes"}
+                      onChange={handleChange}
+                      required
+                    /> Yes
+                  </label>
+                </div>
+
+                {/* Extra fields only if tampering = Yes */}
+                {formData.tampering === "Yes" && (
+                  <>
+                    <div className="form-group">
+                      <label>Tampering Image:</label>
+                      <input
+                        type="file"
+                        name="tamperingImage"
+                        onChange={handleChange}
+                        required
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label>Missing Components:</label>
+                      <Select
+                        isMulti
+                        name="missingComponents"
+                        options={partFailureOptions}
+                        value={partFailureOptions.filter((opt) =>
+                          (formData.missingComponents || []).includes(opt.value)
+                        )}
+                        onChange={(selected) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            missingComponents: selected ? selected.map((s) => s.value) : [],
+                          }))
+                        }
+                        placeholder="Select missing components"
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label>Replaced Components:</label>
+                      <Select
+                        isMulti
+                        name="replacedComponents"
+                        options={partFailureOptions}
+                        value={partFailureOptions.filter((opt) =>
+                          (formData.replacedComponents || []).includes(opt.value)
+                        )}
+                        onChange={(selected) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            replacedComponents: selected ? selected.map((s) => s.value) : [],
+                          }))
+                        }
+                        placeholder="Select replaced components"
+                      />
+                    </div>
+                  </>
+                )}
               </>
             )}
           </>

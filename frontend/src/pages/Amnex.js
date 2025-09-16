@@ -23,6 +23,7 @@ function Amnex() {
     sparesUsed: "",
     systemDiagnostics: null,
     remarks: "",
+    technicalSupport: "No",
     tampering: "No",
     tamperingImage: null,
     missingComponent: "",
@@ -43,12 +44,12 @@ function Amnex() {
         const response = await fetch("/MASTER_DATA_ADAIKAL.xlsx");
         const arrayBuffer = await response.arrayBuffer();
         const workbook = XLSX.read(arrayBuffer, { type: "array" });
-        
+
         // Try different possible sheet names
-        const sheet = workbook.Sheets["AMX_MASTER"] || 
-                     workbook.Sheets["Sheet1"] || 
-                     workbook.Sheets[workbook.SheetNames[0]];
-        
+        const sheet = workbook.Sheets["AMX_MASTER"] ||
+          workbook.Sheets["Sheet1"] ||
+          workbook.Sheets[workbook.SheetNames[0]];
+
         if (sheet) {
           const jsonData = XLSX.utils.sheet_to_json(sheet);
           console.log("✅ Excel Rows:", jsonData);
@@ -105,94 +106,96 @@ function Amnex() {
   };
 
   // ✅ Submit form to GAS
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  setLoading(true);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
 
-  try {
-    console.log("Starting form submission...");
-    
-    // Prepare payload
-    let payload = { 
-      engineerName: formData.engineerName,
-      fleetNumber: formData.fleetNumber,
-      depo: formData.depo,
-      deviceId: formData.deviceId,
-      vehicleStatus: formData.vehicleStatus,
-      sparesUsed: formData.sparesUsed,
-      remarks: formData.remarks,
-      tampering: formData.tampering,
-    };
+    try {
+      console.log("Starting form submission...");
 
-    // Add tampering details only if tampering is "Yes"
-    if (formData.tampering === "Yes") {
-      payload.missingComponent = formData.missingComponent;
-      payload.replacedComponent = formData.replacedComponent;
-    }
+      // Prepare payload
+      let payload = {
+        engineerName: formData.engineerName,
+        fleetNumber: formData.fleetNumber,
+        depo: formData.depo,
+        deviceId: formData.deviceId,
+        vehicleStatus: formData.vehicleStatus,
+        sparesUsed: formData.sparesUsed,
+        remarks: formData.remarks,
+        technicalSupport: formData.technicalSupport,
+        tampering: formData.tampering,
+      };
 
-    // Handle file uploads
-    if (formData.systemDiagnostics) {
-      const systemDiagnosticsBase64 = await fileToBase64(formData.systemDiagnostics);
-      payload.systemDiagnostics = systemDiagnosticsBase64;
-    }
+      // Add tampering details only if tampering is "Yes"
+      if (formData.tampering === "Yes") {
+        payload.missingComponent = formData.missingComponent;
+        payload.replacedComponent = formData.replacedComponent;
+      }
 
-    if (formData.tampering === "Yes" && formData.tamperingImage) {
-      const tamperingImageBase64 = await fileToBase64(formData.tamperingImage);
-      payload.tamperingImage = tamperingImageBase64;
-    }
+      // Handle file uploads
+      if (formData.systemDiagnostics) {
+        const systemDiagnosticsBase64 = await fileToBase64(formData.systemDiagnostics);
+        payload.systemDiagnostics = systemDiagnosticsBase64;
+      }
 
-    console.log("Payload prepared:", payload);
+      if (formData.tampering === "Yes" && formData.tamperingImage) {
+        const tamperingImageBase64 = await fileToBase64(formData.tamperingImage);
+        payload.tamperingImage = tamperingImageBase64;
+      }
 
-    // ✅ REPLACE WITH YOUR ACTUAL GOOGLE APPS SCRIPT URL
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwRi4E7S4znsRhWDSyO8tu6X2nE98t2Se2lo1kpKqanT_AwPYou-R7URfoKVXfE82H-rg/exec";
-    
-    const response = await fetch(SCRIPT_URL, {
-      method: "POST",
-      body: JSON.stringify(payload),
-    });
-    
-    const result = await response.json();
-    console.log("Response:", result);
-    
-    if (result.result === "success") {
-      alert("✅ Form submitted successfully! PDF generated: " + result.pdfUrl);
-      
-      // Reset form
-      setFormData({
-        engineerName: user?.username || "",
-        fleetNumber: "",
-        depo: "",
-        deviceId: "",
-        vehicleStatus: "Open",
-        sparesUsed: "",
-        systemDiagnostics: null,
-        remarks: "",
-        tampering: "No",
-        tamperingImage: null,
-        missingComponent: "",
-        replacedComponent: "",
+      console.log("Payload prepared:", payload);
+
+      // ✅ REPLACE WITH YOUR ACTUAL GOOGLE APPS SCRIPT URL
+      const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzJbl5M48E8EiTVOvkkMm6f7pS1J4CA1AkEhBOfz_QXJ_cuFcAId1Vx2C8JvNEg1NfviQ/exec";
+
+      const response = await fetch(SCRIPT_URL, {
+        method: "POST",
+        body: JSON.stringify(payload),
       });
 
-      // Reset file inputs
-      if (fileInputRef.current) fileInputRef.current.value = "";
-      if (tamperingInputRef.current) tamperingInputRef.current.value = "";
-    } else {
-      alert("❌ Error: " + result.message);
-    }
-  } catch (err) {
-    console.error("Submit error details:", err);
-    alert("Failed to submit form! Check console for details.");
-  }
-  setLoading(false);
-};
+      const result = await response.json();
+      console.log("Response:", result);
 
-// Helper function to convert file to base64
-const fileToBase64 = (file) => new Promise((resolve, reject) => {
-  const reader = new FileReader();
-  reader.readAsDataURL(file);
-  reader.onload = () => resolve(reader.result);
-  reader.onerror = error => reject(error);
-});
+      if (result.result === "success") {
+        alert("✅ Form submitted successfully! PDF generated: " + result.pdfUrl);
+
+        // Reset form
+        setFormData({
+          engineerName: user?.username || "",
+          fleetNumber: "",
+          depo: "",
+          deviceId: "",
+          vehicleStatus: "Open",
+          sparesUsed: "",
+          systemDiagnostics: null,
+          remarks: "",
+          technicalSupport: "No",
+          tampering: "No",
+          tamperingImage: null,
+          missingComponent: "",
+          replacedComponent: "",
+        });
+
+        // Reset file inputs
+        if (fileInputRef.current) fileInputRef.current.value = "";
+        if (tamperingInputRef.current) tamperingInputRef.current.value = "";
+      } else {
+        alert("❌ Error: " + result.message);
+      }
+    } catch (err) {
+      console.error("Submit error details:", err);
+      alert("Failed to submit form! Check console for details.");
+    }
+    setLoading(false);
+  };
+
+  // Helper function to convert file to base64
+  const fileToBase64 = (file) => new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = error => reject(error);
+  });
 
   return (
     <div className="mtc container mt-5">
@@ -211,7 +214,7 @@ const fileToBase64 = (file) => new Promise((resolve, reject) => {
         </div>
 
         {/* Fleet Number */}
-        <div className="form-group" style={{position: 'relative'}}>
+        <div className="form-group" style={{ position: 'relative' }}>
           <label>Fleet Number:</label>
           <input
             type="text"
@@ -239,8 +242,8 @@ const fileToBase64 = (file) => new Promise((resolve, reject) => {
               {filteredFleets.map((fleet, index) => {
                 const fleetNumber = fleet["Fleet Number"] || fleet["Fleet Numb -1"] || fleet["FleetNumber"] || "";
                 return (
-                  <li 
-                    key={index} 
+                  <li
+                    key={index}
                     onClick={() => handleSelectFleet(fleet)}
                     style={{
                       padding: '8px 12px',
@@ -261,11 +264,11 @@ const fileToBase64 = (file) => new Promise((resolve, reject) => {
         {/* Depot */}
         <div className="form-group">
           <label>Depot:</label>
-          <input 
-            type="text" 
-            value={formData.depo} 
-            readOnly 
-            style={{backgroundColor: '#f5f5f5'}}
+          <input
+            type="text"
+            value={formData.depo}
+            readOnly
+            style={{ backgroundColor: '#f5f5f5' }}
           />
         </div>
 
@@ -330,6 +333,34 @@ const fileToBase64 = (file) => new Promise((resolve, reject) => {
           ></textarea>
         </div>
 
+        {/* Technical Support */}
+        <div className="form-group">
+          <label>Technical Support Required?</label>
+          <div>
+            <label>
+              <input
+                type="radio"
+                name="technicalSupport"
+                value="No"
+                checked={formData.technicalSupport === "No"}
+                onChange={handleChange}
+              />
+              No
+            </label>
+            <label style={{ marginLeft: "15px" }}>
+              <input
+                type="radio"
+                name="technicalSupport"
+                value="Yes"
+                checked={formData.technicalSupport === "Yes"}
+                onChange={handleChange}
+              />
+              Yes
+            </label>
+          </div>
+        </div>
+
+
         {/* Tampering */}
         <div className="form-group">
           <label>Tampering Happened?</label>
@@ -345,7 +376,7 @@ const fileToBase64 = (file) => new Promise((resolve, reject) => {
               />
               No
             </label>
-            <label style={{marginLeft: '15px'}}>
+            <label style={{ marginLeft: '15px' }}>
               <input
                 type="radio"
                 name="tampering"

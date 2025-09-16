@@ -30,6 +30,11 @@ function OGL() {
     updatesFile: null,
     preventiveSection: {},
     imeiNumber: "",
+    technicalSupport: "",      // Yes / No
+    tamperingHappened: "",     // Yes / No
+    tamperingImage: null,
+    missingComponent: [],
+    replacedComponent: [],
   });
   const [submitting, setSubmitting] = useState(false);
 
@@ -172,6 +177,7 @@ function OGL() {
       const diagnosticsFile = await toBase64(formData.diagnosticsFile);
       const deviceInfoFile = await toBase64(formData.deviceInfoFile);
       const updatesFile = await toBase64(formData.updatesFile);
+      const tamperingImage = await toBase64(formData.tamperingImage);
 
       // Prepare payload
       const payload = {
@@ -181,14 +187,19 @@ function OGL() {
         diagnosticsFile,
         deviceInfoFile,
         updatesFile,
+        tamperingImage,   // ✅ Add here
+        technicalSupport: formData.technicalSupport,
+        tampering: formData.tamperingHappened,
         partFailure: formData.partFailure || [],
-        requiredSpares: formData.requiredSpares || [], // ✅ Now an array
+        requiredSpares: formData.requiredSpares || [],
+        missingComponent: formData.missingComponent || [],
+        replacedComponent: formData.replacedComponent || [],
         preventiveSection: formData.preventiveSection || {}
       };
 
       // Send to Google Apps Script
       const response = await fetch(
-        "https://script.google.com/macros/s/AKfycbypNt6BhvXLqbvQ1MNPMdxamZrsVHLbifHFKga5aG_bTIDZu2hcpY363wPk-ENLyVbYSg/exec",
+        "https://script.google.com/macros/s/AKfycbxVMzUUcCVqM41sKqtgmLCdgHmOekEHwftOf1eZYcpXNVoKAxwvrtj2dNCrw2UZhC0tcQ/exec",
         {
           method: "POST",
           body: JSON.stringify(payload),
@@ -518,7 +529,7 @@ function OGL() {
                   ></textarea>
                 </div>
 
-              
+
 
                 <div className="form-group">
                   <label>System Diagnostics:</label>
@@ -539,6 +550,117 @@ function OGL() {
                     required
                   />
                 </div>
+                {/* Technical Support Required */}
+                <div className="form-group">
+                  <label>Technical Support Required:</label>
+                  <div>
+                    <label>
+                      <input
+                        type="radio"
+                        name="technicalSupport"
+                        value="No"
+                        checked={formData.technicalSupport === "No"}
+                        onChange={handleChange}
+                        required
+                      />
+                      No
+                    </label>
+                    <label style={{ marginLeft: "15px" }}>
+                      <input
+                        type="radio"
+                        name="technicalSupport"
+                        value="Yes"
+                        checked={formData.technicalSupport === "Yes"}
+                        onChange={handleChange}
+                        required
+                      />
+                      Yes
+                    </label>
+                  </div>
+                </div>
+
+                {/* Tampering Happened */}
+                <div className="form-group">
+                  <label>Tampering Happened:</label>
+                  <div>
+                    <label>
+                      <input
+                        type="radio"
+                        name="tamperingHappened"
+                        value="No"
+                        checked={formData.tamperingHappened === "No"}
+                        onChange={handleChange}
+                        required
+                      />
+                      No
+                    </label>
+                    <label style={{ marginLeft: "15px" }}>
+                      <input
+                        type="radio"
+                        name="tamperingHappened"
+                        value="Yes"
+                        checked={formData.tamperingHappened === "Yes"}
+                        onChange={handleChange}
+                        required
+                      />
+                      Yes
+                    </label>
+                  </div>
+                </div>
+
+                {/* Extra fields if Tampering = Yes */}
+                {formData.tamperingHappened === "Yes" && (
+                  <>
+                    <div className="form-group">
+                      <label>Tampering Image:</label>
+                      <input
+                        type="file"
+                        name="tamperingImage"
+                        onChange={handleChange}
+                        required
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label>Missing Component:</label>
+                      <Select
+                        isMulti
+                        name="missingComponent"
+                        options={partFailureOptions}
+                        value={partFailureOptions.filter((opt) =>
+                          (formData.missingComponent || []).includes(opt.value)
+                        )}
+                        onChange={(selected) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            missingComponent: selected ? selected.map((s) => s.value) : [],
+                          }))
+                        }
+                        placeholder="Select missing components"
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label>Replaced Component:</label>
+                      <Select
+                        isMulti
+                        name="replacedComponent"
+                        options={requiredSparesOptions}
+                        value={requiredSparesOptions.filter((opt) =>
+                          (formData.replacedComponent || []).includes(opt.value)
+                        )}
+                        onChange={(selected) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            replacedComponent: selected ? selected.map((s) => s.value) : [],
+                          }))
+                        }
+                        placeholder="Select replaced components"
+                      />
+                    </div>
+                  </>
+                )}
+
               </>
             )}
           </>
@@ -658,7 +780,7 @@ function OGL() {
                   ></textarea>
                 </div>
 
-              
+
 
                 <div className="form-group">
                   <label>System Diagnostics:</label>
@@ -679,6 +801,116 @@ function OGL() {
                     required
                   />
                 </div>
+                {/* Technical Support Required */}
+                <div className="form-group">
+                  <label>Technical Support Required:</label>
+                  <div>
+                    <label>
+                      <input
+                        type="radio"
+                        name="technicalSupport"
+                        value="No"
+                        checked={formData.technicalSupport === "No"}
+                        onChange={handleChange}
+                        required
+                      />
+                      No
+                    </label>
+                    <label style={{ marginLeft: "15px" }}>
+                      <input
+                        type="radio"
+                        name="technicalSupport"
+                        value="Yes"
+                        checked={formData.technicalSupport === "Yes"}
+                        onChange={handleChange}
+                        required
+                      />
+                      Yes
+                    </label>
+                  </div>
+                </div>
+
+                {/* Tampering Happened */}
+                <div className="form-group">
+                  <label>Tampering Happened:</label>
+                  <div>
+                    <label>
+                      <input
+                        type="radio"
+                        name="tamperingHappened"
+                        value="No"
+                        checked={formData.tamperingHappened === "No"}
+                        onChange={handleChange}
+                        required
+                      />
+                      No
+                    </label>
+                    <label style={{ marginLeft: "15px" }}>
+                      <input
+                        type="radio"
+                        name="tamperingHappened"
+                        value="Yes"
+                        checked={formData.tamperingHappened === "Yes"}
+                        onChange={handleChange}
+                        required
+                      />
+                      Yes
+                    </label>
+                  </div>
+                </div>
+
+                {/* Extra fields if Tampering = Yes */}
+                {formData.tamperingHappened === "Yes" && (
+                  <>
+                    <div className="form-group">
+                      <label>Tampering Image:</label>
+                      <input
+                        type="file"
+                        name="tamperingImage"
+                        onChange={handleChange}
+                        required
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label>Missing Component:</label>
+                      <Select
+                        isMulti
+                        name="missingComponent"
+                        options={partFailureOptions}
+                        value={partFailureOptions.filter((opt) =>
+                          (formData.missingComponent || []).includes(opt.value)
+                        )}
+                        onChange={(selected) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            missingComponent: selected ? selected.map((s) => s.value) : [],
+                          }))
+                        }
+                        placeholder="Select missing components"
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label>Replaced Component:</label>
+                      <Select
+                        isMulti
+                        name="replacedComponent"
+                        options={requiredSparesOptions}
+                        value={requiredSparesOptions.filter((opt) =>
+                          (formData.replacedComponent || []).includes(opt.value)
+                        )}
+                        onChange={(selected) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            replacedComponent: selected ? selected.map((s) => s.value) : [],
+                          }))
+                        }
+                        placeholder="Select replaced components"
+                      />
+                    </div>
+                  </>
+                )}
               </>
             )}
           </>
@@ -827,7 +1059,7 @@ function OGL() {
                   ></textarea>
                 </div>
 
-              
+
 
                 <div className="form-group">
                   <label>System Diagnostics:</label>
@@ -848,6 +1080,116 @@ function OGL() {
                     required
                   />
                 </div>
+                {/* Technical Support Required */}
+                <div className="form-group">
+                  <label>Technical Support Required:</label>
+                  <div>
+                    <label>
+                      <input
+                        type="radio"
+                        name="technicalSupport"
+                        value="No"
+                        checked={formData.technicalSupport === "No"}
+                        onChange={handleChange}
+                        required
+                      />
+                      No
+                    </label>
+                    <label style={{ marginLeft: "15px" }}>
+                      <input
+                        type="radio"
+                        name="technicalSupport"
+                        value="Yes"
+                        checked={formData.technicalSupport === "Yes"}
+                        onChange={handleChange}
+                        required
+                      />
+                      Yes
+                    </label>
+                  </div>
+                </div>
+
+                {/* Tampering Happened */}
+                <div className="form-group">
+                  <label>Tampering Happened:</label>
+                  <div>
+                    <label>
+                      <input
+                        type="radio"
+                        name="tamperingHappened"
+                        value="No"
+                        checked={formData.tamperingHappened === "No"}
+                        onChange={handleChange}
+                        required
+                      />
+                      No
+                    </label>
+                    <label style={{ marginLeft: "15px" }}>
+                      <input
+                        type="radio"
+                        name="tamperingHappened"
+                        value="Yes"
+                        checked={formData.tamperingHappened === "Yes"}
+                        onChange={handleChange}
+                        required
+                      />
+                      Yes
+                    </label>
+                  </div>
+                </div>
+
+                {/* Extra fields if Tampering = Yes */}
+                {formData.tamperingHappened === "Yes" && (
+                  <>
+                    <div className="form-group">
+                      <label>Tampering Image:</label>
+                      <input
+                        type="file"
+                        name="tamperingImage"
+                        onChange={handleChange}
+                        required
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label>Missing Component:</label>
+                      <Select
+                        isMulti
+                        name="missingComponent"
+                        options={partFailureOptions}
+                        value={partFailureOptions.filter((opt) =>
+                          (formData.missingComponent || []).includes(opt.value)
+                        )}
+                        onChange={(selected) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            missingComponent: selected ? selected.map((s) => s.value) : [],
+                          }))
+                        }
+                        placeholder="Select missing components"
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label>Replaced Component:</label>
+                      <Select
+                        isMulti
+                        name="replacedComponent"
+                        options={requiredSparesOptions}
+                        value={requiredSparesOptions.filter((opt) =>
+                          (formData.replacedComponent || []).includes(opt.value)
+                        )}
+                        onChange={(selected) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            replacedComponent: selected ? selected.map((s) => s.value) : [],
+                          }))
+                        }
+                        placeholder="Select replaced components"
+                      />
+                    </div>
+                  </>
+                )}
               </>
             )}
           </>

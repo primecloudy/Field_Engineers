@@ -31,6 +31,12 @@ function MTC() {
     objective: "",
     updatesFile: null,
     preventiveSection: {},
+     // ✅ NEW FIELDS
+    technicalSupport: "", // Yes / No
+    tampering: "", // Yes / No
+    tamperingImage: null,
+    missingComponent: "",
+    replacedComponent: "",
   });
   const [submitting, setSubmitting] = useState(false);
 
@@ -205,6 +211,7 @@ const handleSelectFleet = (fleet) => {
     const complaintsFile = await toBase64(formData.complaintsFile);
     const updatesFile = await toBase64(formData.updatesFile);
     const systemDiagnosticsFile = await toBase64(formData.systemDiagnosticsFile);
+    const tamperingImage = await toBase64(formData.tamperingImage);
 
     // Prepare payload
     const payload = {
@@ -213,6 +220,7 @@ const handleSelectFleet = (fleet) => {
       complaintsFile,
       updatesFile,
       systemDiagnosticsFile,
+      tamperingImage,
       partFailure: formData.partFailure || [],
       sparesRequired: formData.sparesRequired || [],
       mnvr: formData.mnvr || [],
@@ -223,7 +231,7 @@ const handleSelectFleet = (fleet) => {
     console.log("Submitting payload:", payload);
 
     // Send to Google Apps Script
-    const scriptURL = "https://script.google.com/macros/s/AKfycbx_S6M2-R_6mU718ZES7vBgRgpSf_5keR9cKLtoqP0yPJfIp1dtD9X9V3Y65NZBHg7FNg/exec";
+    const scriptURL = "https://script.google.com/macros/s/AKfycbw9PDlu8f9lAOMUNnbrZh2OvbWC4Z9mr8kF4NmhankTofBATc1kfcAO-Bz4aEaLyYshLQ/exec";
     
     const response = await fetch(scriptURL, {
       method: "POST",
@@ -274,6 +282,11 @@ const handleSelectFleet = (fleet) => {
       objective: "",
       updatesFile: null,
       preventiveSection: {},
+      technicalSupport:"",
+      tampering:"",
+      tamperingImage: null,
+      missingComponent: "",
+      replacedComponent: "",
     });
 
   } catch (error) {
@@ -612,6 +625,89 @@ const handleSelectFleet = (fleet) => {
                     onChange={handleChange}
                   />
                 </div>
+                 {/* ✅ Technical Support */}
+        <div className="form-group">
+          <label>Technical Support Required:</label>
+          <div>
+            <label>
+              <input
+                type="radio"
+                name="technicalSupport"
+                value="No"
+                checked={formData.technicalSupport === "No"}
+                onChange={handleChange}
+              />
+              No
+            </label>
+            <label className="ms-3">
+              <input
+                type="radio"
+                name="technicalSupport"
+                value="Yes"
+                checked={formData.technicalSupport === "Yes"}
+                onChange={handleChange}
+              />
+              Yes
+            </label>
+          </div>
+        </div>
+
+        {/* ✅ Tampering Section */}
+        <div className="form-group">
+          <label>Tampering Happened:</label>
+          <div>
+            <label>
+              <input
+                type="radio"
+                name="tampering"
+                value="No"
+                checked={formData.tampering === "No"}
+                onChange={handleChange}
+              />
+              No
+            </label>
+            <label className="ms-3">
+              <input
+                type="radio"
+                name="tampering"
+                value="Yes"
+                checked={formData.tampering === "Yes"}
+                onChange={handleChange}
+              />
+              Yes
+            </label>
+          </div>
+        </div>
+
+        {/* ✅ Show extra fields only if tampering = Yes */}
+        {formData.tampering === "Yes" && (
+          <>
+            <div className="form-group">
+              <label>Tampering Image:</label>
+              <input type="file" name="tamperingImage" onChange={handleChange} />
+            </div>
+
+            <div className="form-group">
+              <label>Missing Component:</label>
+              <input
+                type="text"
+                name="missingComponent"
+                value={formData.missingComponent}
+                onChange={handleChange}
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Replaced Component:</label>
+              <input
+                type="text"
+                name="replacedComponent"
+                value={formData.replacedComponent}
+                onChange={handleChange}
+              />
+            </div>
+          </>
+        )}
               </>
             )}
 
@@ -634,6 +730,89 @@ const handleSelectFleet = (fleet) => {
                     onChange={handleChange}
                   />
                 </div>
+                 {/* ✅ Technical Support */}
+        <div className="form-group">
+          <label>Technical Support Required:</label>
+          <div>
+            <label>
+              <input
+                type="radio"
+                name="technicalSupport"
+                value="No"
+                checked={formData.technicalSupport === "No"}
+                onChange={handleChange}
+              />
+              No
+            </label>
+            <label className="ms-3">
+              <input
+                type="radio"
+                name="technicalSupport"
+                value="Yes"
+                checked={formData.technicalSupport === "Yes"}
+                onChange={handleChange}
+              />
+              Yes
+            </label>
+          </div>
+        </div>
+
+        {/* ✅ Tampering Section */}
+        <div className="form-group">
+          <label>Tampering Happened:</label>
+          <div>
+            <label>
+              <input
+                type="radio"
+                name="tampering"
+                value="No"
+                checked={formData.tampering === "No"}
+                onChange={handleChange}
+              />
+              No
+            </label>
+            <label className="ms-3">
+              <input
+                type="radio"
+                name="tampering"
+                value="Yes"
+                checked={formData.tampering === "Yes"}
+                onChange={handleChange}
+              />
+              Yes
+            </label>
+          </div>
+        </div>
+
+        {/* ✅ Show extra fields only if tampering = Yes */}
+        {formData.tampering === "Yes" && (
+          <>
+            <div className="form-group">
+              <label>Tampering Image:</label>
+              <input type="file" name="tamperingImage" onChange={handleChange} />
+            </div>
+
+            <div className="form-group">
+              <label>Missing Component:</label>
+              <input
+                type="text"
+                name="missingComponent"
+                value={formData.missingComponent}
+                onChange={handleChange}
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Replaced Component:</label>
+              <input
+                type="text"
+                name="replacedComponent"
+                value={formData.replacedComponent}
+                onChange={handleChange}
+              />
+            </div>
+          </>
+        )}
               </>
             )}
           </>
@@ -789,6 +968,89 @@ const handleSelectFleet = (fleet) => {
                     onChange={handleChange}
                   />
                 </div>
+                 {/* ✅ Technical Support */}
+        <div className="form-group">
+          <label>Technical Support Required:</label>
+          <div>
+            <label>
+              <input
+                type="radio"
+                name="technicalSupport"
+                value="No"
+                checked={formData.technicalSupport === "No"}
+                onChange={handleChange}
+              />
+              No
+            </label>
+            <label className="ms-3">
+              <input
+                type="radio"
+                name="technicalSupport"
+                value="Yes"
+                checked={formData.technicalSupport === "Yes"}
+                onChange={handleChange}
+              />
+              Yes
+            </label>
+          </div>
+        </div>
+
+        {/* ✅ Tampering Section */}
+        <div className="form-group">
+          <label>Tampering Happened:</label>
+          <div>
+            <label>
+              <input
+                type="radio"
+                name="tampering"
+                value="No"
+                checked={formData.tampering === "No"}
+                onChange={handleChange}
+              />
+              No
+            </label>
+            <label className="ms-3">
+              <input
+                type="radio"
+                name="tampering"
+                value="Yes"
+                checked={formData.tampering === "Yes"}
+                onChange={handleChange}
+              />
+              Yes
+            </label>
+          </div>
+        </div>
+
+        {/* ✅ Show extra fields only if tampering = Yes */}
+        {formData.tampering === "Yes" && (
+          <>
+            <div className="form-group">
+              <label>Tampering Image:</label>
+              <input type="file" name="tamperingImage" onChange={handleChange} />
+            </div>
+
+            <div className="form-group">
+              <label>Missing Component:</label>
+              <input
+                type="text"
+                name="missingComponent"
+                value={formData.missingComponent}
+                onChange={handleChange}
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Replaced Component:</label>
+              <input
+                type="text"
+                name="replacedComponent"
+                value={formData.replacedComponent}
+                onChange={handleChange}
+              />
+            </div>
+          </>
+        )}
               </>
             )}
 
@@ -811,6 +1073,89 @@ const handleSelectFleet = (fleet) => {
                     onChange={handleChange}
                   />
                 </div>
+                 {/* ✅ Technical Support */}
+        <div className="form-group">
+          <label>Technical Support Required:</label>
+          <div>
+            <label>
+              <input
+                type="radio"
+                name="technicalSupport"
+                value="No"
+                checked={formData.technicalSupport === "No"}
+                onChange={handleChange}
+              />
+              No
+            </label>
+            <label className="ms-3">
+              <input
+                type="radio"
+                name="technicalSupport"
+                value="Yes"
+                checked={formData.technicalSupport === "Yes"}
+                onChange={handleChange}
+              />
+              Yes
+            </label>
+          </div>
+        </div>
+
+        {/* ✅ Tampering Section */}
+        <div className="form-group">
+          <label>Tampering Happened:</label>
+          <div>
+            <label>
+              <input
+                type="radio"
+                name="tampering"
+                value="No"
+                checked={formData.tampering === "No"}
+                onChange={handleChange}
+              />
+              No
+            </label>
+            <label className="ms-3">
+              <input
+                type="radio"
+                name="tampering"
+                value="Yes"
+                checked={formData.tampering === "Yes"}
+                onChange={handleChange}
+              />
+              Yes
+            </label>
+          </div>
+        </div>
+
+        {/* ✅ Show extra fields only if tampering = Yes */}
+        {formData.tampering === "Yes" && (
+          <>
+            <div className="form-group">
+              <label>Tampering Image:</label>
+              <input type="file" name="tamperingImage" onChange={handleChange} />
+            </div>
+
+            <div className="form-group">
+              <label>Missing Component:</label>
+              <input
+                type="text"
+                name="missingComponent"
+                value={formData.missingComponent}
+                onChange={handleChange}
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Replaced Component:</label>
+              <input
+                type="text"
+                name="replacedComponent"
+                value={formData.replacedComponent}
+                onChange={handleChange}
+              />
+            </div>
+          </>
+        )}
               </>
             )}
           </>
@@ -993,6 +1338,89 @@ const handleSelectFleet = (fleet) => {
                     onChange={handleChange}
                   />
                 </div>
+                 {/* ✅ Technical Support */}
+        <div className="form-group">
+          <label>Technical Support Required:</label>
+          <div>
+            <label>
+              <input
+                type="radio"
+                name="technicalSupport"
+                value="No"
+                checked={formData.technicalSupport === "No"}
+                onChange={handleChange}
+              />
+              No
+            </label>
+            <label className="ms-3">
+              <input
+                type="radio"
+                name="technicalSupport"
+                value="Yes"
+                checked={formData.technicalSupport === "Yes"}
+                onChange={handleChange}
+              />
+              Yes
+            </label>
+          </div>
+        </div>
+
+        {/* ✅ Tampering Section */}
+        <div className="form-group">
+          <label>Tampering Happened:</label>
+          <div>
+            <label>
+              <input
+                type="radio"
+                name="tampering"
+                value="No"
+                checked={formData.tampering === "No"}
+                onChange={handleChange}
+              />
+              No
+            </label>
+            <label className="ms-3">
+              <input
+                type="radio"
+                name="tampering"
+                value="Yes"
+                checked={formData.tampering === "Yes"}
+                onChange={handleChange}
+              />
+              Yes
+            </label>
+          </div>
+        </div>
+
+        {/* ✅ Show extra fields only if tampering = Yes */}
+        {formData.tampering === "Yes" && (
+          <>
+            <div className="form-group">
+              <label>Tampering Image:</label>
+              <input type="file" name="tamperingImage" onChange={handleChange} />
+            </div>
+
+            <div className="form-group">
+              <label>Missing Component:</label>
+              <input
+                type="text"
+                name="missingComponent"
+                value={formData.missingComponent}
+                onChange={handleChange}
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Replaced Component:</label>
+              <input
+                type="text"
+                name="replacedComponent"
+                value={formData.replacedComponent}
+                onChange={handleChange}
+              />
+            </div>
+          </>
+        )}
               </>
             )}
 
@@ -1015,6 +1443,89 @@ const handleSelectFleet = (fleet) => {
                     onChange={handleChange}
                   />
                 </div>
+                 {/* ✅ Technical Support */}
+        <div className="form-group">
+          <label>Technical Support Required:</label>
+          <div>
+            <label>
+              <input
+                type="radio"
+                name="technicalSupport"
+                value="No"
+                checked={formData.technicalSupport === "No"}
+                onChange={handleChange}
+              />
+              No
+            </label>
+            <label className="ms-3">
+              <input
+                type="radio"
+                name="technicalSupport"
+                value="Yes"
+                checked={formData.technicalSupport === "Yes"}
+                onChange={handleChange}
+              />
+              Yes
+            </label>
+          </div>
+        </div>
+
+        {/* ✅ Tampering Section */}
+        <div className="form-group">
+          <label>Tampering Happened:</label>
+          <div>
+            <label>
+              <input
+                type="radio"
+                name="tampering"
+                value="No"
+                checked={formData.tampering === "No"}
+                onChange={handleChange}
+              />
+              No
+            </label>
+            <label className="ms-3">
+              <input
+                type="radio"
+                name="tampering"
+                value="Yes"
+                checked={formData.tampering === "Yes"}
+                onChange={handleChange}
+              />
+              Yes
+            </label>
+          </div>
+        </div>
+
+        {/* ✅ Show extra fields only if tampering = Yes */}
+        {formData.tampering === "Yes" && (
+          <>
+            <div className="form-group">
+              <label>Tampering Image:</label>
+              <input type="file" name="tamperingImage" onChange={handleChange} />
+            </div>
+
+            <div className="form-group">
+              <label>Missing Component:</label>
+              <input
+                type="text"
+                name="missingComponent"
+                value={formData.missingComponent}
+                onChange={handleChange}
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Replaced Component:</label>
+              <input
+                type="text"
+                name="replacedComponent"
+                value={formData.replacedComponent}
+                onChange={handleChange}
+              />
+            </div>
+          </>
+        )}
               </>
             )}
           </>

@@ -32,6 +32,12 @@ function TNSTC() {
     referenceFile1: null,
     referenceFile2: null,
     preventiveSection: {},
+    // ✅ New Fields
+    technicalSupport: "No", // Yes / No
+    tampering: "No",        // Yes / No
+    tamperingImage: null,
+    missingComponent: "",
+    replacedComponent: "",
   });
   const [submitting, setSubmitting] = useState(false);
 
@@ -83,11 +89,11 @@ function TNSTC() {
         if (sheet) {
           const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
           console.log("✅ Excel Rows:", jsonData);
-          
+
           // Extract headers and data
           const headers = jsonData[0];
           const rows = jsonData.slice(1);
-          
+
           // Map to consistent column names
           const formattedData = rows.map(row => {
             const obj = {};
@@ -108,7 +114,7 @@ function TNSTC() {
             });
             return obj;
           });
-          
+
           setFleetData(formattedData);
           console.log("✅ Formatted Fleet Data:", formattedData);
         } else {
@@ -212,6 +218,8 @@ function TNSTC() {
       const partFailureImage = await toBase64(formData.partFailureImage);
       const referenceFile1 = await toBase64(formData.referenceFile1);
       const referenceFile2 = await toBase64(formData.referenceFile2);
+      const tamperingImage = await toBase64(formData.tamperingImage);
+
 
       // Prepare payload
       const payload = {
@@ -222,6 +230,7 @@ function TNSTC() {
         partFailureImage,
         referenceFile1,
         referenceFile2,
+        tamperingImage,
         partFailure: formData.partFailure || [],
         spareReplaced: formData.spareReplaced || [],
         sparesRequired: formData.sparesRequired || [],
@@ -230,12 +239,12 @@ function TNSTC() {
 
       // Send to Google Apps Script (replace with your TNSTC endpoint)
       const response = await fetch(
-        "https://script.google.com/macros/s/AKfycbzpLs8HCEQGGlY_hTDtsSp5Ob1ZA8jRIxMu3IdSFob6lP5JYI8HlUBWZ9MWtTkWAj4L/exec",
+        "https://script.google.com/macros/s/AKfycbwGSnkQsNiWzU2CaGGxCk-27YFOh0W5kGZlxREZtRWHxvuht7jJkQ39umfi0Y0-QCjh9g/exec",
         {
           method: "POST",
-          
+
           body: JSON.stringify(payload),
-        }   
+        }
       );
 
       if (!response.ok) throw new Error("Failed to submit form");
@@ -309,7 +318,7 @@ function TNSTC() {
           </select>
         </div>
 
-         {/* Fleet Number */}
+        {/* Fleet Number */}
         <div className="form-group">
           <label>Fleet Number:</label>
           <input
@@ -584,6 +593,70 @@ function TNSTC() {
                     onChange={handleChange}
                   />
                 </div>
+                {/* Technical Support */}
+                <div className="form-group">
+                  <label>Technical Support Required:</label>
+                  <select
+                    name="technicalSupport"
+                    value={formData.technicalSupport}
+                    onChange={handleChange}
+                    required
+                  >
+                    <option value="No">No</option>
+                    <option value="Yes">Yes</option>
+                  </select>
+                </div>
+
+                {/* Tampering */}
+                <div className="form-group">
+                  <label>Tampering Happened:</label>
+                  <select
+                    name="tampering"
+                    value={formData.tampering}
+                    onChange={handleChange}
+                    required
+                  >
+                    <option value="No">No</option>
+                    <option value="Yes">Yes</option>
+                  </select>
+                </div>
+
+                {/* If Tampering = Yes, show more fields */}
+                {formData.tampering === "Yes" && (
+                  <>
+                    <div className="form-group">
+                      <label>Tampering Image:</label>
+                      <input
+                        type="file"
+                        name="tamperingImage"
+                        onChange={handleChange}
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label>Missing Component:</label>
+                      <input
+                        type="text"
+                        name="missingComponent"
+                        value={formData.missingComponent}
+                        onChange={handleChange}
+                        placeholder="Enter missing component"
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label>Replaced Component:</label>
+                      <input
+                        type="text"
+                        name="replacedComponent"
+                        value={formData.replacedComponent}
+                        onChange={handleChange}
+                        placeholder="Enter replaced component"
+                      />
+                    </div>
+                  </>
+                )}
+
               </>
             )}
           </>
@@ -732,6 +805,70 @@ function TNSTC() {
                     onChange={handleChange}
                   />
                 </div>
+                {/* Technical Support */}
+                <div className="form-group">
+                  <label>Technical Support Required:</label>
+                  <select
+                    name="technicalSupport"
+                    value={formData.technicalSupport}
+                    onChange={handleChange}
+                    required
+                  >
+                    <option value="No">No</option>
+                    <option value="Yes">Yes</option>
+                  </select>
+                </div>
+
+                {/* Tampering */}
+                <div className="form-group">
+                  <label>Tampering Happened:</label>
+                  <select
+                    name="tampering"
+                    value={formData.tampering}
+                    onChange={handleChange}
+                    required
+                  >
+                    <option value="No">No</option>
+                    <option value="Yes">Yes</option>
+                  </select>
+                </div>
+
+                {/* If Tampering = Yes, show more fields */}
+                {formData.tampering === "Yes" && (
+                  <>
+                    <div className="form-group">
+                      <label>Tampering Image:</label>
+                      <input
+                        type="file"
+                        name="tamperingImage"
+                        onChange={handleChange}
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label>Missing Component:</label>
+                      <input
+                        type="text"
+                        name="missingComponent"
+                        value={formData.missingComponent}
+                        onChange={handleChange}
+                        placeholder="Enter missing component"
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label>Replaced Component:</label>
+                      <input
+                        type="text"
+                        name="replacedComponent"
+                        value={formData.replacedComponent}
+                        onChange={handleChange}
+                        placeholder="Enter replaced component"
+                      />
+                    </div>
+                  </>
+                )}
+
               </>
             )}
           </>
@@ -966,6 +1103,70 @@ function TNSTC() {
                 </div>
               </>
             )}
+            {/* Technical Support */}
+            <div className="form-group">
+              <label>Technical Support Required:</label>
+              <select
+                name="technicalSupport"
+                value={formData.technicalSupport}
+                onChange={handleChange}
+                required
+              >
+                <option value="No">No</option>
+                <option value="Yes">Yes</option>
+              </select>
+            </div>
+
+            {/* Tampering */}
+            <div className="form-group">
+              <label>Tampering Happened:</label>
+              <select
+                name="tampering"
+                value={formData.tampering}
+                onChange={handleChange}
+                required
+              >
+                <option value="No">No</option>
+                <option value="Yes">Yes</option>
+              </select>
+            </div>
+
+            {/* If Tampering = Yes, show more fields */}
+            {formData.tampering === "Yes" && (
+              <>
+                <div className="form-group">
+                  <label>Tampering Image:</label>
+                  <input
+                    type="file"
+                    name="tamperingImage"
+                    onChange={handleChange}
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Missing Component:</label>
+                  <input
+                    type="text"
+                    name="missingComponent"
+                    value={formData.missingComponent}
+                    onChange={handleChange}
+                    placeholder="Enter missing component"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Replaced Component:</label>
+                  <input
+                    type="text"
+                    name="replacedComponent"
+                    value={formData.replacedComponent}
+                    onChange={handleChange}
+                    placeholder="Enter replaced component"
+                  />
+                </div>
+              </>
+            )}
+
           </>
         )}
 
