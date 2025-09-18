@@ -636,6 +636,7 @@ const handleSelectFleet = (fleet) => {
                 value="No"
                 checked={formData.technicalSupport === "No"}
                 onChange={handleChange}
+                required
               />
               No
             </label>
@@ -663,6 +664,7 @@ const handleSelectFleet = (fleet) => {
                 value="No"
                 checked={formData.tampering === "No"}
                 onChange={handleChange}
+                required
               />
               No
             </label>
@@ -684,7 +686,7 @@ const handleSelectFleet = (fleet) => {
           <>
             <div className="form-group">
               <label>Tampering Image:</label>
-              <input type="file" name="tamperingImage" onChange={handleChange} />
+              <input type="file" name="tamperingImage" onChange={handleChange} required />
             </div>
 
             <div className="form-group">
@@ -694,6 +696,7 @@ const handleSelectFleet = (fleet) => {
                 name="missingComponent"
                 value={formData.missingComponent}
                 onChange={handleChange}
+                required
               />
             </div>
 
@@ -704,6 +707,7 @@ const handleSelectFleet = (fleet) => {
                 name="replacedComponent"
                 value={formData.replacedComponent}
                 onChange={handleChange}
+                required
               />
             </div>
           </>
@@ -741,6 +745,7 @@ const handleSelectFleet = (fleet) => {
                 value="No"
                 checked={formData.technicalSupport === "No"}
                 onChange={handleChange}
+                required
               />
               No
             </label>
@@ -768,6 +773,7 @@ const handleSelectFleet = (fleet) => {
                 value="No"
                 checked={formData.tampering === "No"}
                 onChange={handleChange}
+                required
               />
               No
             </label>
@@ -789,7 +795,7 @@ const handleSelectFleet = (fleet) => {
           <>
             <div className="form-group">
               <label>Tampering Image:</label>
-              <input type="file" name="tamperingImage" onChange={handleChange} />
+              <input type="file" name="tamperingImage" onChange={handleChange} required />
             </div>
 
             <div className="form-group">
@@ -799,6 +805,7 @@ const handleSelectFleet = (fleet) => {
                 name="missingComponent"
                 value={formData.missingComponent}
                 onChange={handleChange}
+                required
               />
             </div>
 
@@ -809,6 +816,7 @@ const handleSelectFleet = (fleet) => {
                 name="replacedComponent"
                 value={formData.replacedComponent}
                 onChange={handleChange}
+                required
               />
             </div>
           </>
@@ -979,6 +987,7 @@ const handleSelectFleet = (fleet) => {
                 value="No"
                 checked={formData.technicalSupport === "No"}
                 onChange={handleChange}
+                required
               />
               No
             </label>
@@ -1006,6 +1015,7 @@ const handleSelectFleet = (fleet) => {
                 value="No"
                 checked={formData.tampering === "No"}
                 onChange={handleChange}
+                required
               />
               No
             </label>
@@ -1027,7 +1037,7 @@ const handleSelectFleet = (fleet) => {
           <>
             <div className="form-group">
               <label>Tampering Image:</label>
-              <input type="file" name="tamperingImage" onChange={handleChange} />
+              <input type="file" name="tamperingImage" onChange={handleChange} required />
             </div>
 
             <div className="form-group">
@@ -1037,6 +1047,7 @@ const handleSelectFleet = (fleet) => {
                 name="missingComponent"
                 value={formData.missingComponent}
                 onChange={handleChange}
+                required
               />
             </div>
 
@@ -1047,6 +1058,7 @@ const handleSelectFleet = (fleet) => {
                 name="replacedComponent"
                 value={formData.replacedComponent}
                 onChange={handleChange}
+                required
               />
             </div>
           </>
@@ -1084,6 +1096,7 @@ const handleSelectFleet = (fleet) => {
                 value="No"
                 checked={formData.technicalSupport === "No"}
                 onChange={handleChange}
+                required
               />
               No
             </label>
@@ -1111,6 +1124,7 @@ const handleSelectFleet = (fleet) => {
                 value="No"
                 checked={formData.tampering === "No"}
                 onChange={handleChange}
+                required
               />
               No
             </label>
@@ -1132,7 +1146,7 @@ const handleSelectFleet = (fleet) => {
           <>
             <div className="form-group">
               <label>Tampering Image:</label>
-              <input type="file" name="tamperingImage" onChange={handleChange} />
+              <input type="file" name="tamperingImage" onChange={handleChange} required/>
             </div>
 
             <div className="form-group">
@@ -1142,6 +1156,7 @@ const handleSelectFleet = (fleet) => {
                 name="missingComponent"
                 value={formData.missingComponent}
                 onChange={handleChange}
+                required
               />
             </div>
 
@@ -1152,6 +1167,7 @@ const handleSelectFleet = (fleet) => {
                 name="replacedComponent"
                 value={formData.replacedComponent}
                 onChange={handleChange}
+                required
               />
             </div>
           </>
@@ -1349,6 +1365,7 @@ const handleSelectFleet = (fleet) => {
                 value="No"
                 checked={formData.technicalSupport === "No"}
                 onChange={handleChange}
+                required
               />
               No
             </label>
@@ -1376,6 +1393,7 @@ const handleSelectFleet = (fleet) => {
                 value="No"
                 checked={formData.tampering === "No"}
                 onChange={handleChange}
+                required
               />
               No
             </label>
@@ -1397,7 +1415,7 @@ const handleSelectFleet = (fleet) => {
           <>
             <div className="form-group">
               <label>Tampering Image:</label>
-              <input type="file" name="tamperingImage" onChange={handleChange} />
+              <input type="file" name="tamperingImage" onChange={handleChange} required />
             </div>
 
             <div className="form-group">
@@ -1407,6 +1425,7 @@ const handleSelectFleet = (fleet) => {
                 name="missingComponent"
                 value={formData.missingComponent}
                 onChange={handleChange}
+                required
               />
             </div>
 
@@ -1417,6 +1436,7 @@ const handleSelectFleet = (fleet) => {
                 name="replacedComponent"
                 value={formData.replacedComponent}
                 onChange={handleChange}
+                required
               />
             </div>
           </>
@@ -1454,6 +1474,7 @@ const handleSelectFleet = (fleet) => {
                 value="No"
                 checked={formData.technicalSupport === "No"}
                 onChange={handleChange}
+                required
               />
               No
             </label>
@@ -1481,6 +1502,7 @@ const handleSelectFleet = (fleet) => {
                 value="No"
                 checked={formData.tampering === "No"}
                 onChange={handleChange}
+                required
               />
               No
             </label>
@@ -1502,7 +1524,7 @@ const handleSelectFleet = (fleet) => {
           <>
             <div className="form-group">
               <label>Tampering Image:</label>
-              <input type="file" name="tamperingImage" onChange={handleChange} />
+              <input type="file" name="tamperingImage" onChange={handleChange} required />
             </div>
 
             <div className="form-group">
@@ -1512,6 +1534,7 @@ const handleSelectFleet = (fleet) => {
                 name="missingComponent"
                 value={formData.missingComponent}
                 onChange={handleChange}
+                required
               />
             </div>
 
@@ -1522,6 +1545,7 @@ const handleSelectFleet = (fleet) => {
                 name="replacedComponent"
                 value={formData.replacedComponent}
                 onChange={handleChange}
+                required
               />
             </div>
           </>

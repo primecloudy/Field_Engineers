@@ -630,6 +630,7 @@ function TNSTC() {
                         type="file"
                         name="tamperingImage"
                         onChange={handleChange}
+                        required
                       />
                     </div>
 
@@ -641,6 +642,7 @@ function TNSTC() {
                         value={formData.missingComponent}
                         onChange={handleChange}
                         placeholder="Enter missing component"
+                        required
                       />
                     </div>
 
@@ -652,6 +654,7 @@ function TNSTC() {
                         value={formData.replacedComponent}
                         onChange={handleChange}
                         placeholder="Enter replaced component"
+                        required
                       />
                     </div>
                   </>
@@ -842,6 +845,7 @@ function TNSTC() {
                         type="file"
                         name="tamperingImage"
                         onChange={handleChange}
+                        required
                       />
                     </div>
 
@@ -853,6 +857,7 @@ function TNSTC() {
                         value={formData.missingComponent}
                         onChange={handleChange}
                         placeholder="Enter missing component"
+                        required
                       />
                     </div>
 
@@ -864,6 +869,7 @@ function TNSTC() {
                         value={formData.replacedComponent}
                         onChange={handleChange}
                         placeholder="Enter replaced component"
+                        required
                       />
                     </div>
                   </>
@@ -1140,6 +1146,7 @@ function TNSTC() {
                     type="file"
                     name="tamperingImage"
                     onChange={handleChange}
+                    required
                   />
                 </div>
 
@@ -1151,6 +1158,7 @@ function TNSTC() {
                     value={formData.missingComponent}
                     onChange={handleChange}
                     placeholder="Enter missing component"
+                    required
                   />
                 </div>
 
@@ -1162,6 +1170,7 @@ function TNSTC() {
                     value={formData.replacedComponent}
                     onChange={handleChange}
                     placeholder="Enter replaced component"
+                    required
                   />
                 </div>
               </>
