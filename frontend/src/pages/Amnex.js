@@ -193,7 +193,7 @@ function OGL() {
 
       // Send to Google Apps Script
       const response = await fetch(
-        "https://script.google.com/macros/s/AKfycbxZXvKyjAhNJcrcrCz-65f05riJXpv61yWlRcsx5RKgyd6epSrjggE7osy6RRqMhfnhew/exec",
+        "https://script.google.com/macros/s/AKfycbzFV8mpXuH06mGFvE7JItnSH436ncwXomAEYk6QPcRVlgaMb7wXpR0CmIBFnU4oftAqVQ/exec",
         {
           method: "POST",
           body: JSON.stringify(payload),
