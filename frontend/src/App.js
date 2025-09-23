@@ -7,11 +7,10 @@ import Dashboard from "./pages/Dashboard";
 import Attendance from "./pages/Attendance";
 import Home from "./pages/Home";
 import Amnex from "./pages/Amnex";
-import MTC from "./pages/MTC";
 import SwitchPage from "./pages/Switch";
 import LogoutAttendance from "./pages/LogoutAttendance";
-import TNSTC from "./pages/TNSTC";
 import OGL from "./pages/OGL";
+import LowFloor from "./pages/LowFloor";
 
 // ✅ PrivateRoute for role-based protection
 const PrivateRoute = ({ children, role }) => {
@@ -75,8 +74,7 @@ function App() {
 
           {/* Other pages */}
           <Route path="/amnex" element={<Amnex />} />
-          <Route path="/TNSTC" element={<TNSTC />} />
-          <Route path="/MTC" element={<MTC/>}/>
+          <Route path="/LowFloor" element={<LowFloor />} />
           <Route path="/switch" element={<SwitchPage />} />
           <Route path="/OGL" element={<OGL />} />
 

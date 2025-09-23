@@ -136,27 +136,87 @@
 .card {
   display: flex;
   align-items: center;
-  background: white;
+  background-color: #ffffff;
   border-radius: 12px;
   padding: 1.5rem;
   text-decoration: none;
   color: inherit;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-  transition: all 0.3s ease;
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.08); /* A more subtle, multi-layered shadow */
+  transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  border: 1px solid rgba(0, 0, 0, 0.05); /* Keeps the border for structure */
+  position: relative; /* Needed for the pseudo-element glow */
+  overflow: hidden; /* Ensures the glow doesn't spill out */
+}
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 5px; /* The initial width of the colored bar */
+  border-radius: 12px 0 0 12px; /* Matches the card's border-radius */
+  transition: width 0.3s ease, background 0.3s ease;
 }
 
+.card:hover::before {
+  width: 100%; /* Expands the glow across the entire card */
+  opacity: 0.1; /* Makes it a subtle, glowing overlay */
+}
+/* Card-specific colors using the new pseudo-element */
+.amnex-card::before {
+  background-color: #e74c3c;
+}
+
+.tnstc-card::before {
+  background-color: #3498db;
+}
+
+.mtc-card::before {
+  background-color: #2ecc71;
+}
+
+.switch-card::before {
+  background-color: #9b59b6;
+}
+
+.ogl-card::before {
+  background-color: #59b6a2;
+}
 .card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+  transform: translateY(-8px); /* A slightly more pronounced lift */
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08), 0 3px 6px rgba(0, 0, 0, 0.1);
 }
 
 .card-icon {
-  font-size: 2.5rem;
-  margin-right: 1.2rem;
-  flex-shrink: 0;
+  font-size: 2.8rem; /* Slightly larger icon */
+  margin-right: 1.5rem;
+  color: #555; /* A softer color for the icon */
 }
 
+.card h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.5rem; /* Larger, more prominent heading */
+  font-weight: 600; /* Bolder for emphasis */
+  color: #2c3e50;
+}
+
+.card p {
+  margin: 0;
+  color: #7f8c8d;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.card-arrow {
+  font-size: 1.8rem;
+  color: #3498db;
+  font-weight: 700;
+  transition: transform 0.3s ease; /* Adds a transition to the arrow */
+}
+
+.card:hover .card-arrow {
+  transform: translateX(5px); /* Moves the arrow slightly to the right on hover */
+}
 .card-content {
   flex: 1;
 }

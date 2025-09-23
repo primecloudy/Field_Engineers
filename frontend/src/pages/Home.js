@@ -106,23 +106,16 @@ function Home() {
             <div className="card-arrow">→</div>
           </Link>
 
-          <Link to="/TNSTC" className="card tnstc-card">
-            <div className="card-icon">🚎</div>
+          <Link to="/LowFloor" className="card tnstc-card">
+            <div className="card-icon">🚍</div>
             <div className="card-content">
-              <h3>TNSTC</h3>
-              <p>Access TNSTC maintenance form</p>
+              <h3>AL LowFloor</h3>
+              <p>Access AL LowFloor maintenance form</p>
             </div>
             <div className="card-arrow">→</div>
           </Link>
 
-          <Link to="/MTC" className="card mtc-card">
-            <div className="card-icon">🚍</div>
-            <div className="card-content">
-              <h3>MTC</h3>
-              <p>Access MTC maintenance form</p>
-            </div>
-            <div className="card-arrow">→</div>
-          </Link>
+        
 
           <Link to="/switch" className="card switch-card">
             <div className="card-icon">🚎</div>
