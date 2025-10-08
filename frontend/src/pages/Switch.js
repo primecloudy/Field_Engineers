@@ -9,10 +9,12 @@ function Switch() {
   const [filteredFleets, setFilteredFleets] = useState([]);
   const [fleetData, setFleetData] = useState([]);
   const [submitting, setSubmitting] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
 
   // Form state
   const [formData, setFormData] = useState({
-    engineerName: user?.username || "",
+    validatorName: user?.username || "",
+    engineerName: "",
     depo: "",
     fleetNumber: "",
     imeiNumber: "",
@@ -46,7 +48,34 @@ function Switch() {
     tamperingImage: null,
     missingComponent: [],
     replacedComponent: [],
+    validation: "",
   });
+
+  // Engineer options
+  const engineerOptions = [
+  { value: "Abinesh", label: "Abinesh" },
+  { value: "Abinesh V", label: "Abinesh V" },
+  { value: "Alex Pandian", label: "Alex Pandian" },
+  { value: "Anbarasu", label: "Anbarasu" },
+  { value: "Avinash", label: "Avinash" },
+  { value: "Dinesh Kumar", label: "Dinesh Kumar" },
+  { value: "Dinesh S", label: "Dinesh S" },
+  { value: "Kaif", label: "Kaif" },
+  { value: "Kirubakaran", label: "Kirubakaran" },
+  { value: "Mani Bharathi", label: "Mani Bharathi" },
+  { value: "Mandaar", label: "Mandaar" },
+  { value: "Muthukumar", label: "Muthukumar" },
+  { value: "Naeem Khan", label: "Naeem Khan" },
+  { value: "Prashant", label: "Prashant" },
+  { value: "Renganathan", label: "Renganathan" },
+  { value: "Rushikesh", label: "Rushikesh" },
+  { value: "Sameer Monde", label: "Sameer Monde" },
+  { value: "Sabarish", label: "Sabarish" },
+  { value: "Sarvesh", label: "Sarvesh" },
+  { value: "Yogesh", label: "Yogesh" },
+  { value: "Yuvaraj", label: "Yuvaraj" },
+  { value: "Imran", label: "Imran" },
+];
 
   // Options for dropdowns
   const partFailureOptions = [
@@ -84,13 +113,13 @@ function Switch() {
     { value: "SATA CABLE", label: "SATA CABLE" },
     { value: "HARDDISK POWER PICTILE", label: "HARDDISK POWER PICTILE" },
     { value: "VGA PICTILE", label: "VGA PICTILE" },
-    { value: "UART PICTILE", label: "UART PICTile" },
+    { value: "UART PICTILE", label: "UART PICTILE" },
     { value: "6 PIN TO 4 PIN PICTILE", label: "6 PIN TO 4 PIN PICTILE" },
     { value: "EC QUECTEL MODEM", label: "EC QUECTEL MODEM" },
     { value: "LITHIUM BATTERY", label: "LITHIUM BATTERY" },
     { value: "3AMP FUSE", label: "3AMP FUSE" },
     { value: "BOX END BULCONNECTOR MALE", label: "BOX END BULCONNECTOR MALE" },
-    { value: "BOX END BULCONNECTOR FEMALE", label: "BOX END BULCONnECTOR FEMALE" },
+    { value: "BOX END BULCONNECTOR FEMALE", label: "BOX END BULCONNECTOR FEMALE" },
     { value: "AMPLIFIER", label: "AMPLIFIER" },
     { value: "CAN MODULE", label: "CAN MODULE" },
     { value: "BOX END MRS CONNECTOR", label: "BOX END MRS CONNECTOR" },
@@ -116,7 +145,7 @@ function Switch() {
 
   useEffect(() => {
     if (user?.username) {
-      setFormData((prev) => ({ ...prev, engineerName: user.username }));
+      setFormData((prev) => ({ ...prev, validatorName: user.username }));
     }
   }, [user]);
 
@@ -188,8 +217,10 @@ function Switch() {
           .includes(value.toLowerCase())
       );
       setFilteredFleets(filtered);
+      setShowDropdown(true);
     } else {
       setFilteredFleets([]);
+      setShowDropdown(false);
     }
   };
 
@@ -202,11 +233,102 @@ function Switch() {
       imeiNumber: fleet["Device ID"] || fleet["IMEI"] || "",
     }));
     setFilteredFleets([]);
+    setShowDropdown(false);
+  };
+
+  // Reset form
+  const resetForm = () => {
+    setFormData({
+      validatorName: user?.username || "",
+      engineerName: "",
+      depo: "",
+      fleetNumber: "",
+      imeiNumber: "",
+      serviceType: "",
+      preventiveSection: {},
+      vehicleStatus: "",
+      reportStatus: "",
+      objective: "",
+      updateStatus: "",
+      reasonForPending: "",
+      odometer: "",
+      partFailure: [],
+      partFailureImage: null,
+      partReplaceImage: null,
+      complaintCloseImage: null,
+      problemDescription: "",
+      actionTaken: "",
+      requiredSpares: [],
+      replaceSpares: [],
+      remarks: "",
+      diagnosticsFile: null,
+      deviceInfoFile: null,
+      updatesFile: null,
+      preventiveFile: null,
+      technicalSupport: "",
+      tamperingHappened: "",
+      tamperingImage: null,
+      missingComponent: [],
+      replacedComponent: [],
+      validation: "",
+    });
+  };
+
+  // Validate form based on service type
+  const validateForm = () => {
+    // Basic required fields
+    if (!formData.validatorName || !formData.engineerName || !formData.fleetNumber || 
+        !formData.depo || !formData.imeiNumber || !formData.serviceType) {
+      alert("Please fill all basic required fields");
+      return false;
+    }
+
+    // Service type specific validations
+    switch (formData.serviceType) {
+      case "Preventive":
+        if (!formData.vehicleStatus) {
+          alert("Please select Vehicle Status");
+          return false;
+        }
+        if (Object.keys(formData.preventiveSection).length === 0) {
+          alert("Please fill the Preventive Section");
+          return false;
+        }
+        break;
+      
+      case "Complaints":
+        if (!formData.reportStatus) {
+          alert("Please select Report Status");
+          return false;
+        }
+        break;
+      
+      case "Updates":
+        if (!formData.objective || !formData.updateStatus) {
+          alert("Please fill all Update fields");
+          return false;
+        }
+        if (formData.updateStatus === "Pending" && !formData.reasonForPending) {
+          alert("Please provide reason for pending update");
+          return false;
+        }
+        break;
+      
+      default:
+        break;
+    }
+
+    return true;
   };
 
   // Handle form submit
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+
     setSubmitting(true);
 
     // Helper: Convert file to Base64
@@ -254,7 +376,7 @@ function Switch() {
 
       // Send to Google Apps Script
       const response = await fetch(
-        "https://script.google.com/macros/s/AKfycbxZTZgWQSDeQruNM0OUi1igvQyzEFUIKM6fUaj3czKHvMN-j5NArXjgOgNYBwnmtmHmCw/exec",
+        "https://script.google.com/macros/s/AKfycbxTLYs_jmE91--y2x9DYyEo8MMj3jEdWPtkAEcR9EqZaWUcCLBm6MNvo6j4xSrdewSp9A/exec",
         {
           method: "POST",
           body: JSON.stringify(payload),
@@ -267,38 +389,7 @@ function Switch() {
       alert("Form submitted successfully!");
 
       // Reset form
-      setFormData({
-        engineerName: user?.username || "",
-        depo: "",
-        fleetNumber: "",
-        imeiNumber: "",
-        serviceType: "",
-        preventiveSection: {},
-        vehicleStatus: "",
-        reportStatus: "",
-        objective: "",
-        updateStatus: "",
-        reasonForPending: "",
-        odometer: "",
-        partFailure: [],
-        partFailureImage: null,
-        partReplaceImage: null,
-        complaintCloseImage: null,
-        problemDescription: "",
-        actionTaken: "",
-        requiredSpares: [],
-        replaceSpares: [],
-        remarks: "",
-        diagnosticsFile: null,
-        deviceInfoFile: null,
-        updatesFile: null,
-        preventiveFile: null,
-        technicalSupport: "",
-        tamperingHappened: "",
-        tamperingImage: null,
-        missingComponent: [],
-        replacedComponent: [],
-      });
+      resetForm();
 
     } catch (error) {
       console.error("Error submitting form:", error);
@@ -435,7 +526,6 @@ function Switch() {
         />
       </div>
 
-      {/* Replace Spares field for Close status */}
       <div className="form-group">
         <label>Replace Spares:</label>
         <Select
@@ -539,7 +629,6 @@ function Switch() {
         />
       </div>
 
-      {/* Part Replace Image for Complaints Close status */}
       <div className="form-group">
         <label>Part Replace Image:</label>
         <input
@@ -550,7 +639,6 @@ function Switch() {
         />
       </div>
 
-      {/* Complaint Close Image for Complaints Close status */}
       <div className="form-group">
         <label>Complaint Close Image:</label>
         <input
@@ -659,7 +747,7 @@ function Switch() {
 
       <div className="form-group">
         <label>Technical Support Required:</label>
-        <div>
+        <div className="radio-group">
           <label>
             <input
               type="radio"
@@ -671,7 +759,7 @@ function Switch() {
             />
             No
           </label>
-          <label style={{ marginLeft: "15px" }}>
+          <label>
             <input
               type="radio"
               name="technicalSupport"
@@ -687,7 +775,7 @@ function Switch() {
 
       <div className="form-group">
         <label>Tampering Happened:</label>
-        <div>
+        <div className="radio-group">
           <label>
             <input
               type="radio"
@@ -699,7 +787,7 @@ function Switch() {
             />
             No
           </label>
-          <label style={{ marginLeft: "15px" }}>
+          <label>
             <input
               type="radio"
               name="tamperingHappened"
@@ -764,6 +852,34 @@ function Switch() {
           </div>
         </>
       )}
+      
+      <div className="form-group">
+        <label>Validation:</label>
+        <div className="radio-group">
+          <label>
+            <input
+              type="radio"
+              name="validation"
+              value="Valid"
+              checked={formData.validation === "Valid"}
+              onChange={handleChange}
+              required
+            />
+            Valid
+          </label>
+          <label>
+            <input
+              type="radio"
+              name="validation"
+              value="Invalid"
+              checked={formData.validation === "Invalid"}
+              onChange={handleChange}
+              required
+            />
+            Invalid
+          </label>
+        </div>
+      </div>
     </>
   );
 
@@ -772,85 +888,85 @@ function Switch() {
     <>
       <div className="form-group preventive-section">
         <h4 className="section-title">Preventive Section</h4>
-        <div className="button-group mb-2">
-          <button type="button" onClick={() => handleMarkAll("OKAY")} className="btn btn-success btn-sm me-2">
+        <div className="button-group">
+          <button type="button" onClick={() => handleMarkAll("OKAY")} className="btn btn-success btn-sm">
             All OK
           </button>
           <button type="button" onClick={() => handleMarkAll("NOT_OKAY")} className="btn btn-danger btn-sm">
             All Not OK
           </button>
+          
         </div>
 
-        <table className="preventive-table">
-          <thead>
-            <tr>
-              <th>Component</th>
-              <th>OKAY</th>
-              <th>NOT OKAY</th>
-              <th>NOT APPLICABLE</th>
-            </tr>
-          </thead>
-          <tbody>
-            {[
-              "CAM STREAMING",
-              "CAMERA DATE & TIME",
-              "REAR CAM POPUP",
-              "FDU",
-              "SDU",
-              "RDU",
-              "IDU",
-              "ALL LED ROUTE UPDATE",
-              "MIC",
-              "GPS",
-              "GSM",
-              "CAN",
-              "M-ANN",
-              "BDC COLOR",
-              "BDC TOUCH",
-              "USB DETECTING",
-              "PLAYBACK",
-              "LED PCB",
-              "PREOPLE COUNT CAM COUNTING",
-              "DATA PACKET",
-              "FIRMWARE VERSION IN CURRENT UPDATE",
-              "PIS IN CURRENT VERSION",
-            ].map((item) => (
-              <tr key={item}>
-                <td>{item}</td>
-                <td>
-                  <input
-                    type="radio"
-                    name={item}
-                    value="OKAY"
-                    checked={formData.preventiveSection[item] === "OKAY"}
-                    onChange={(e) => handlePreventiveSection(item, e.target.value)}
-                    required
-                  />
-                </td>
-                <td>
-                  <input
-                    type="radio"
-                    name={item}
-                    value="NOT_OKAY"
-                    checked={formData.preventiveSection[item] === "NOT_OKAY"}
-                    onChange={(e) => handlePreventiveSection(item, e.target.value)}
-                    required
-                  />
-                </td>
-                <td>
-                  <input
-                    type="radio"
-                    name={item}
-                    value="NOT_APPLICABLE"
-                    checked={formData.preventiveSection[item] === "NOT_APPLICABLE"}
-                    onChange={(e) => handlePreventiveSection(item, e.target.value)}
-                    required
-                  />
-                </td>
+        <div className="preventive-table-container">
+          <table className="preventive-table">
+            <thead>
+              <tr>
+                <th>Component</th>
+                <th>OKAY</th>
+                <th>NOT OKAY</th>
+                <th>NOT APPLICABLE</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {[
+                "CAM STREAMING",
+                "CAMERA DATE & TIME",
+                "REAR CAM POPUP",
+                "FDU",
+                "SDU",
+                "RDU",
+                "IDU",
+                "ALL LED ROUTE UPDATE",
+                "MIC",
+                "GPS",
+                "GSM",
+                "CAN",
+                "M-ANN",
+                "BDC COLOR",
+                "BDC TOUCH",
+                "USB DETECTING",
+                "PLAYBACK",
+                "LED PCB",
+                "PREOPLE COUNT CAM COUNTING",
+                "DATA PACKET",
+                "FIRMWARE VERSION IN CURRENT UPDATE",
+                "PIS IN CURRENT VERSION",
+              ].map((item) => (
+                <tr key={item}>
+                  <td>{item}</td>
+                  <td>
+                    <input
+                      type="radio"
+                      name={item}
+                      value="OKAY"
+                      checked={formData.preventiveSection[item] === "OKAY"}
+                      onChange={(e) => handlePreventiveSection(item, e.target.value)}
+                    />
+                  </td>
+                  <td>
+                    <input
+                      type="radio"
+                      name={item}
+                      value="NOT_OKAY"
+                      checked={formData.preventiveSection[item] === "NOT_OKAY"}
+                      onChange={(e) => handlePreventiveSection(item, e.target.value)}
+                    />
+                  </td>
+                  <td>
+                    <input
+                      type="radio"
+                      name={item}
+                      value="NOT_APPLICABLE"
+                      checked={formData.preventiveSection[item] === "NOT_APPLICABLE"}
+                      onChange={(e) => handlePreventiveSection(item, e.target.value)}
+                    />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
         <p className="note">This question requires one response per row</p>
       </div>
 
@@ -992,19 +1108,39 @@ function Switch() {
 
   return (
     <div className="switch container mt-5">
-      <h2>Switch Page</h2>
+      <h2>Switch Service Form</h2>
       <form onSubmit={handleSubmit} className="form-container">
+        {/* Validator Name */}
+        <div className="form-group">
+          <label>Validator:</label>
+          <input
+            type="text"
+            name="validatorName"
+            value={formData.validatorName}
+            onChange={handleChange}
+            required
+            disabled
+          />
+        </div>
+
         {/* Engineer Name */}
         <div className="form-group">
           <label>Engineer Name:</label>
-          <input
-            type="text"
-            name="engineerName"
+          <select 
+            name="engineerName" 
             value={formData.engineerName}
             onChange={handleChange}
             required
-          />
+          >
+            <option value="">-- Select Engineer --</option>
+            {engineerOptions.map(engineer => (
+              <option key={engineer.value} value={engineer.value}>
+                {engineer.label}
+              </option>
+            ))}
+          </select>
         </div>
+
         {/* Fleet Number */}
         <div className="form-group" style={{ position: 'relative' }}>
           <label>Fleet Number:</label>
@@ -1095,10 +1231,12 @@ function Switch() {
         {formData.serviceType === "Complaints" && renderComplaintsSection()}
         {formData.serviceType === "Updates" && renderUpdatesSection()}
 
-        {/* Submit Button */}
-        <button type="submit" disabled={submitting} className="btn btn-primary mt-3">
-          {submitting ? "Saving..." : "Submit"}
-        </button>
+        {/* Submit and Reset Buttons */}
+        <div className="form-actions">
+          <button type="submit" disabled={submitting} className="btn btn-primary">
+            {submitting ? "Saving..." : "Submit"}
+          </button>
+        </div>
       </form>
     </div>
   );

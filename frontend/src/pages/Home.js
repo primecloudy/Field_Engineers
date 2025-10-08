@@ -141,10 +141,10 @@ function Home() {
 
       {/* Footer */}
       <div className="home-footer">
-        <button onClick={handleLogout} className="logout-btn">
+        {/* <button onClick={handleLogout} className="logout-btn">
           <span className="logout-icon">⎋</span>
           Logout
-        </button>
+        </button> */}
         <div className="footer-info">
           <p>Prime Edge Maintenance System</p>
         </div>
