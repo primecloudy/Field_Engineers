@@ -376,7 +376,7 @@ function Switch() {
 
       // Send to Google Apps Script
       const response = await fetch(
-        "https://script.google.com/macros/s/AKfycbxTLYs_jmE91--y2x9DYyEo8MMj3jEdWPtkAEcR9EqZaWUcCLBm6MNvo6j4xSrdewSp9A/exec",
+        "https://script.google.com/macros/s/AKfycbzqc46OB0KRpMAuLqrhRPrpF8OgoDuM10UbEVhjivq0Vwo6B1UW8kQ7vAHwDZpCi-HENw/exec",
         {
           method: "POST",
           body: JSON.stringify(payload),

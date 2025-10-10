@@ -373,7 +373,7 @@ function LowFloor() {
 
       // Send to Google Apps Script
       const response = await fetch(
-        "https://script.google.com/macros/s/AKfycbxFn6VKmzrgJpNOc9bJTFIoSCuEE68QC72L-3T1yWdkPvEn3PVIWhTheDrC65oOE--xhw/exec",
+        "https://script.google.com/macros/s/AKfycbxiw-KL1uETqs7DVF_JffXJAXJcaDkgDsNafauDSPit8w-dVyow2vj90deqiM8qsYcZqw/exec",
         {
           method: "POST",
           body: JSON.stringify(payload),

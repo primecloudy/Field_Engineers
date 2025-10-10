@@ -370,7 +370,7 @@ function Amnex() {
 
       // Send to Google Apps Script
       const response = await fetch(
-        "https://script.google.com/macros/s/AKfycbzzUn0DUvw0VXpMjDLbTetG-QIeLnHHo2mIOwo_VCIquL4Gg0-TgnzOEka3BHo1RqYJVg/exec",
+        "https://script.google.com/macros/s/AKfycbw9cZmZlnp-n1gv-VIlf9zGzIw0_0K9neCb2jJUcoytWbx4p_3Geb9UPCA217asXajRfw/exec",
         {
           method: "POST",
           body: JSON.stringify(payload),
